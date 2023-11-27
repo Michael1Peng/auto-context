@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
 
 const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
-const blockCommentRegex = /\/\*[\s\S]*?\*\//g;
+const blockCommentStartRegex = /\/\*/g;
+const blockCommentEndRegex = /\*\//g;
 const lineCommentRegex = /\/\/.*$/gm;
 const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/g;
 const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/;
+
+const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact'];
 
 export function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
@@ -15,6 +18,9 @@ export function insertContentFromAllTabs() {
     }
 
     const activeDocumentUri = activeEditor.document.uri.toString();
+    if (!activeEditorLanguageIdList.includes(activeEditor.document.languageId)) {
+        return;
+    }
 
     let allFormattedContent = '';
     allOpenDocuments.forEach(document => {
@@ -39,7 +45,7 @@ function filterContent(content: string): string {
     const filterCommentContent = content.replace(commentBlockRegex, '');
 
     const matches = filterCommentContent.match(copilotContextRegexGlobal);
-    
+
     if (!matches) {
         return '';
     }
@@ -54,7 +60,7 @@ function filterContent(content: string): string {
         }
     });
 
-    return filteredContent;
+    return filteredContent.replace(blockCommentStartRegex, '').replace(blockCommentEndRegex, '');
 }
 
 function formatContentAsComments(content: string, fileUri: string): string {

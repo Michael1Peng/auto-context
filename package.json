@@ -3,7 +3,8 @@
   "publisher": "little-lion-39",
   "displayName": "auto-context",
   "description": "",
-  "version": "0.0.3",
+  "icon": "auto-copilot-context.png",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -11,7 +12,7 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage"
   ],
   "main": "./dist/extension.js",
   "contributes": {
