@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
 
+const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
+const blockCommentRegex = /\/\*[\s\S]*?\*\//g;
+const lineCommentRegex = /\/\/.*$/gm;
+
 export function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
     const activeEditor = vscode.window.activeTextEditor;
@@ -9,10 +13,10 @@ export function insertContentFromAllTabs() {
     }
 
     const activeDocumentUri = activeEditor.document.uri.toString();
-    const existingCommentedFiles = parseExistingComments(activeEditor.document);
 
+    let allFormattedContent = '';
     allOpenDocuments.forEach(document => {
-        if (document.uri.scheme !== 'file' || document.uri.toString() === activeDocumentUri || existingCommentedFiles.includes(document.uri.toString())) {
+        if (document.uri.scheme !== 'file' || document.uri.toString() === activeDocumentUri) {
             return;
         }
 
@@ -20,18 +24,17 @@ export function insertContentFromAllTabs() {
         content = filterOutExistingComments(content);
 
         const formattedContent = formatContentAsComments(content, document.uri.toString());
-
-        activeEditor.edit(editBuilder => {
-            const startOfDocument = activeEditor.document.positionAt(0);
-            editBuilder.insert(startOfDocument, formattedContent + "\n\n");
-        });
+        allFormattedContent += formattedContent + "\n\n";
     });
+
+    if (!allFormattedContent) {
+        return;
+    }
+
+    replaceEditorTopComment(activeEditor, allFormattedContent);
 }
 
 function filterOutExistingComments(content: string): string {
-    const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
-    const blockCommentRegex = /\/\*[\s\S]*?\*\//g;
-    const lineCommentRegex = /\/\/.*$/gm;
 
     return content.replace(commentBlockRegex, '').replace(blockCommentRegex, '').replace(lineCommentRegex, '')
 }
@@ -40,15 +43,20 @@ function formatContentAsComments(content: string, fileUri: string): string {
     return `// CHUNK START\n// file: ${fileUri}\n/**\n${content}\n*/\n// CHUNK END`;
 }
 
-function parseExistingComments(document: vscode.TextDocument): string[] {
-    const text = document.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(10, 0))); // Read the first 10 lines
-    const regex = /\/\/ file: (.+)/g;
-    const matchedFiles = [];
-    let match;
+function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedContent: string) {
+    activeEditor.edit(editBuilder => {
+        const commentBlockMatch = activeEditor.document.getText().match(commentBlockRegex);
+        if (commentBlockMatch) {
+            const startPosition = activeEditor.document.positionAt(0);
 
-    while ((match = regex.exec(text)) !== null) {
-        matchedFiles.push(match[1]);
-    }
+            // 获取commentBlockMatch[0] 的长度，加上换行符数量来确定endPosition
+            const endPosition = activeEditor.document.positionAt(0 + commentBlockMatch[0].length + 1);
 
-    return matchedFiles;
+            const range = new vscode.Range(startPosition, endPosition);
+            editBuilder.replace(range, formattedContent);
+        } else {
+            const startOfDocument = activeEditor.document.positionAt(0);
+            editBuilder.insert(startOfDocument, formattedContent);
+        }
+    });
 }
