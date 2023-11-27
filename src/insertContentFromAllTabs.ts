@@ -1,5 +1,3 @@
-// src/insertContentFromAllTabs.ts
-
 import * as vscode from 'vscode';
 
 export function insertContentFromAllTabs() {
@@ -32,11 +30,14 @@ export function insertContentFromAllTabs() {
 
 function filterOutExistingComments(content: string): string {
     const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
-    return content.replace(commentBlockRegex, '');
+    const blockCommentRegex = /\/\*[\s\S]*?\*\//g;
+    const lineCommentRegex = /\/\/.*$/gm;
+
+    return content.replace(commentBlockRegex, '').replace(blockCommentRegex, '').replace(lineCommentRegex, '')
 }
 
 function formatContentAsComments(content: string, fileUri: string): string {
-    return `// CHUNK START\n// file: ${fileUri}\n${content.split('\n').map(line => '// ' + line).join('\n')}\n// CHUNK END`;
+    return `// CHUNK START\n// file: ${fileUri}\n/**\n${content}\n*/\n// CHUNK END`;
 }
 
 function parseExistingComments(document: vscode.TextDocument): string[] {
