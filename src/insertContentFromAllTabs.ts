@@ -3,6 +3,8 @@ import * as vscode from 'vscode';
 const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
 const blockCommentRegex = /\/\*[\s\S]*?\*\//g;
 const lineCommentRegex = /\/\/.*$/gm;
+const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/g;
+const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/;
 
 export function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
@@ -21,22 +23,38 @@ export function insertContentFromAllTabs() {
         }
 
         let content = document.getText();
-        content = filterOutExistingComments(content);
+        content = filterContent(content);
+        if (!content) {
+            return;
+        }
 
         const formattedContent = formatContentAsComments(content, document.uri.toString());
         allFormattedContent += formattedContent + "\n\n";
     });
 
-    if (!allFormattedContent) {
-        return;
-    }
-
     replaceEditorTopComment(activeEditor, allFormattedContent);
 }
 
-function filterOutExistingComments(content: string): string {
+function filterContent(content: string): string {
+    const filterCommentContent = content.replace(commentBlockRegex, '');
 
-    return content.replace(commentBlockRegex, '').replace(blockCommentRegex, '').replace(lineCommentRegex, '')
+    const matches = filterCommentContent.match(copilotContextRegexGlobal);
+    
+    if (!matches) {
+        return '';
+    }
+
+    // 将所有匹配的块拼接成一个字符串
+    let filteredContent = '';
+    matches.forEach(match => {
+        // 从每个匹配项中提取Start和End标签之间的内容
+        const matchContent = match.match(copilotContextRegex);
+        if (matchContent && matchContent[1]) {
+            filteredContent += matchContent[1].trim() + "\n\n";
+        }
+    });
+
+    return filteredContent;
 }
 
 function formatContentAsComments(content: string, fileUri: string): string {
