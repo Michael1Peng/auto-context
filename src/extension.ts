@@ -2,8 +2,10 @@ import * as vscode from 'vscode';
 
 import { insertContentFromAllTabs } from './insertContentFromAllTabs';
 import { OutputChannelManager } from './outputChannelManager';
+import { removeTopCommentBlocks } from './removeTopCommentBlocks';
 
 let isEdited = false;
+let lastActiveEditor: vscode.TextEditor | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
 	OutputChannelManager.initialize("auto-context");
@@ -11,6 +13,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let resetEditMarkListener = vscode.window.onDidChangeActiveTextEditor(() => {
 		isEdited = false;
+
+		if (lastActiveEditor && lastActiveEditor !== vscode.window.activeTextEditor) {
+			removeTopCommentBlocks(lastActiveEditor);
+		}
+		lastActiveEditor = vscode.window.activeTextEditor;
 	});
 	context.subscriptions.push(resetEditMarkListener);
 
