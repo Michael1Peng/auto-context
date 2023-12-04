@@ -23,8 +23,9 @@ export function insertContentFromAllTabs() {
     }
 
     let allFormattedContent = '';
+    const addedFileUris: string[] = [];
     allOpenDocuments.forEach(document => {
-        if (document.uri.scheme !== 'file' || document.uri.toString() === activeDocumentUri) {
+        if (document.uri.scheme !== 'file' || document.uri.toString() === activeDocumentUri || addedFileUris.includes(document.uri.toString())) {
             return;
         }
 
@@ -36,6 +37,8 @@ export function insertContentFromAllTabs() {
 
         const formattedContent = formatContentAsComments(content, document.uri.toString());
         allFormattedContent += formattedContent + "\n\n";
+
+        addedFileUris.push(document.uri.toString());
     });
 
     replaceEditorTopComment(activeEditor, allFormattedContent);
@@ -74,7 +77,11 @@ function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedConte
             const startPosition = activeEditor.document.positionAt(0);
 
             // 获取commentBlockMatch[0] 的长度，加上换行符数量来确定endPosition
-            const endPosition = activeEditor.document.positionAt(0 + commentBlockMatch[0].length + 1);
+            let commentBlockLength = 0;
+            for (let i = 0; i < commentBlockMatch[0].length; i++) {
+                commentBlockLength += commentBlockMatch[i].length + 1;
+            }
+            const endPosition = activeEditor.document.positionAt(commentBlockLength);
 
             const range = new vscode.Range(startPosition, endPosition);
             editBuilder.replace(range, formattedContent);
