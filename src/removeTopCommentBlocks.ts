@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 
 export const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n\n/g;
 
-export function removeTopCommentBlocks(editor: vscode.TextEditor) {
-  const document = editor.document;
+export function removeTopCommentBlocks(document: vscode.TextDocument) {
   const fileUri = document.uri;
 
   // 读取文件内容
