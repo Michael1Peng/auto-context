@@ -4,7 +4,7 @@
   "displayName": "auto-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -25,7 +25,17 @@
         "command": "auto-context.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Auto Context",
+      "properties": {
+        "auto-context.cleanCopilotContextCommentOnClose": {
+          "type": "boolean",
+          "default": true,
+          "description": "关闭文件时清理copilot 标记"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
