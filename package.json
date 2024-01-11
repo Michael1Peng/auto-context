@@ -22,8 +22,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "auto-context.helloWorld",
-        "title": "Hello World"
+        "command": "auto-context.removeTopCommentBlocks",
+        "title": "Auto Context: Remove Top Comment Blocks"
       }
     ],
     "configuration": {

@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 
-import { insertContentFromAllTabs } from './insertContentFromAllTabs';
+import { insertContentFromAllTabs } from './operation/insertContentFromAllTabs';
 import { OutputChannelManager } from './outputChannelManager';
-import { removeTopCommentBlocks } from './removeTopCommentBlocks';
+import { removeTopCommentBlocks } from './operation/removeTopCommentBlocks';
+import { removeContextCommentTag } from './operation/removeContextCommentTag';
+import { registerCommands } from './commands';
 
 let isEdited = false;
 
@@ -10,13 +12,16 @@ export function activate(context: vscode.ExtensionContext) {
 	OutputChannelManager.initialize("auto-context");
 	OutputChannelManager.appendLine("auto-context activated.");
 
+	registerCommands(context);
+
 	let resetEditMarkListener = vscode.window.onDidChangeActiveTextEditor(() => {
 		isEdited = false;
 	});
 	context.subscriptions.push(resetEditMarkListener);
 
-	let removeTopCommentBlocksListener = vscode.workspace.onDidCloseTextDocument((document) => {
-		removeTopCommentBlocks(document);
+	let removeTopCommentBlocksListener = vscode.workspace.onDidCloseTextDocument(async document => {
+		await removeTopCommentBlocks(document);
+		await removeContextCommentTag(document);
 	});
 	context.subscriptions.push(removeTopCommentBlocksListener);
 
@@ -33,6 +38,3 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(fileOpenListener);
 }
-
-// This method is called when your extension is deactivated
-export function deactivate() { }
