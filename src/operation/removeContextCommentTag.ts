@@ -9,6 +9,10 @@ let cleanCopilotContextCommentOnClose = config.get('cleanCopilotContextCommentOn
 export async function removeContextCommentTag(document: vscode.TextDocument) {
   const fileUri = document.uri;
 
+  if (fileUri.scheme !== 'file') {
+    return;
+  }
+
   try {
     // 读取文件内容
     const buffer = await vscode.workspace.fs.readFile(fileUri);

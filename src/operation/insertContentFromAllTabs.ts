@@ -78,7 +78,7 @@ function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedConte
 
             // 获取commentBlockMatch[0] 的长度，加上换行符数量来确定endPosition
             let commentBlockLength = 0;
-            for (let i = 0; i < commentBlockMatch[0].length; i++) {
+            for (let i = 0; i < commentBlockMatch.length; i++) {
                 commentBlockLength += commentBlockMatch[i].length + 1;
             }
             const endPosition = activeEditor.document.positionAt(commentBlockLength);
