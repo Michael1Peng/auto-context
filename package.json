@@ -1,15 +1,23 @@
 {
   "name": "auto-context",
+  "publisher": "little-lion-39",
   "displayName": "auto-context",
   "description": "",
-  "version": "0.0.1",
+  "icon": "auto-copilot-context.png",
+  "version": "0.0.12",
   "engines": {
     "vscode": "^1.84.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -17,7 +25,17 @@
         "command": "auto-context.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Auto Context",
+      "properties": {
+        "auto-context.cleanCopilotContextCommentOnClose": {
+          "type": "boolean",
+          "default": true,
+          "description": "关闭文件时清理copilot 标记"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
@@ -30,7 +48,7 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
-  "devDependencies": {
+  "dependencies": {
     "@types/vscode": "^1.84.0",
     "@types/mocha": "^10.0.3",
     "@types/node": "18.x",
