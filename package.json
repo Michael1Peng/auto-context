@@ -1,10 +1,10 @@
 {
-  "name": "auto-context",
+  "name": "auto-copilot-context",
   "publisher": "little-lion-39",
   "displayName": "auto-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.0.12",
+  "version": "0.0.15",
   "engines": {
     "vscode": "^1.84.0"
   },
