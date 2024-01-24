@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-const copilotContextStartRegex = /\/\/ \[COPILOT CONTEXT\] Start\n/;
-const copilotContextEndRegex = /\/\/ \[COPILOT CONTEXT\] End here\n/;
+const copilotContextStartRegex = /\/\/ \[COPILOT CONTEXT\] Start\r?\n/;
+const copilotContextEndRegex = /\/\/ \[COPILOT CONTEXT\] End here\r?\n/;
 
 let config = vscode.workspace.getConfiguration('auto-context');
 let cleanCopilotContextCommentOnClose = config.get('cleanCopilotContextCommentOnClose');

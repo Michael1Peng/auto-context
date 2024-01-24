@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
+const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\r?\n/g;
 const blockCommentStartRegex = /\/\*/g;
 const blockCommentEndRegex = /\*\//g;
 const lineCommentRegex = /\/\/.*$/gm;
