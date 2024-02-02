@@ -7,7 +7,7 @@ const lineCommentRegex = /\/\/.*$/gm;
 const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/g;
 const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/;
 
-const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact'];
+const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact', 'scss'];
 
 export function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
