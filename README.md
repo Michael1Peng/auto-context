@@ -1,69 +1,48 @@
-# auto-context README
+### 项目概述
 
-## Features
+该项目是一个Visual Studio Code (VS Code)扩展，旨在增强代码编辑和测试体验。它提供了多个功能，包括管理输出频道、自动移除顶部注释块、插入所有标签页的内容，以及运行和测试代码。
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### 安装指南
 
-For example if there is an image subfolder under your extension project workspace:
+1. 打开VS Code。
+2. 转到扩展市场。
+3. 搜索本扩展并点击安装。
 
-\!\[feature X\]\(images/feature-x.png\)
+### 使用方法
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+#### 输出频道管理
+- 初始化输出频道。
+- 向频道中添加消息。
+- 显示频道，可选择是否保持焦点。
 
-## Requirements
+#### 自动移除顶部注释块
+- 在关闭文档时自动移除顶部的注释块。
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+#### 插入所有标签页的内容
+- 在当前活动文档中插入其他所有标签页的内容。
 
-## Extension Settings
+#### 测试运行
+- 使用Mocha框架运行测试。
+- 支持测试失败时的错误处理。
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### 代码结构
 
-For example:
+1. `outputChannelManager.ts` - 管理VS Code的输出频道。
+2. `removeTopCommentBlocks.ts` - 自动移除文件顶部的注释块。
+3. `index.ts` (位于test/suite目录下) - 配置和运行Mocha测试。
+4. `extension.ts` - 扩展的主要激活和停用逻辑。
+5. `runTest.ts` (位于test目录下) - 运行集成测试。
+6. `extension.test.ts` (位于test/suite目录下) - 包含扩展的测试案例。
+7. `insertContentFromAllTabs.ts` - 在当前活动编辑器中插入所有打开标签页的内容。
 
-This extension contributes the following settings:
+### 贡献指南
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+欢迎社区贡献。请遵循以下步骤进行贡献：
+1. Fork仓库。
+2. 创建新分支。
+3. 提交更改。
+4. 发起Pull Request。
 
-## Known Issues
+### 许可证
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+请参阅项目中的LICENSE文件。

@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 
-const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\n/g;
+const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\r?\n/g;
 const blockCommentStartRegex = /\/\*/g;
 const blockCommentEndRegex = /\*\//g;
 const lineCommentRegex = /\/\/.*$/gm;
-const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/g;
-const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/;
+const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\]([\s\S]*?)\/\/ \[COPILOT CONTEXT\]/g;
+const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\]([\s\S]*?)\/\/ \[COPILOT CONTEXT\]/;
 
-const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact'];
+const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact', 'scss'];
 
 export function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
@@ -78,7 +78,7 @@ function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedConte
 
             // 获取commentBlockMatch[0] 的长度，加上换行符数量来确定endPosition
             let commentBlockLength = 0;
-            for (let i = 0; i < commentBlockMatch[0].length; i++) {
+            for (let i = 0; i < commentBlockMatch.length; i++) {
                 commentBlockLength += commentBlockMatch[i].length + 1;
             }
             const endPosition = activeEditor.document.positionAt(commentBlockLength);
