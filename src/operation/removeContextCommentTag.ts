@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 
 const copilotContextStartRegex = /\/\/ \[COPILOT CONTEXT\] Start\r?\n/;
-const copilotContextEndRegex = /\/\/ \[COPILOT CONTEXT\] End here\r?\n/;
+import { switchConfig } from '../config';
 
-let config = vscode.workspace.getConfiguration('auto-context');
-let cleanCopilotContextCommentOnClose = config.get('cleanCopilotContextCommentOnClose');
+const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\]\r?\n/g;
 
 export async function removeContextCommentTag(document: vscode.TextDocument) {
   const fileUri = document.uri;
@@ -19,9 +18,8 @@ export async function removeContextCommentTag(document: vscode.TextDocument) {
     let content = buffer.toString();
 
     // 移除特定格式的注释块
-    if (cleanCopilotContextCommentOnClose) {
-      content = content.replace(copilotContextStartRegex, '');
-      content = content.replace(copilotContextEndRegex, '');
+    if (switchConfig.getSwitch().cleanCopilotContextCommentOnClose) {
+      content = content.replaceAll(copilotContextRegex, '');
     }
 
     // 写回文件

@@ -4,8 +4,8 @@ const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\r?\n/g;
 const blockCommentStartRegex = /\/\*/g;
 const blockCommentEndRegex = /\*\//g;
 const lineCommentRegex = /\/\/.*$/gm;
-const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/g;
-const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\] Start([\s\S]*?)\/\/ \[COPILOT CONTEXT\] End/;
+const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\]([\s\S]*?)\/\/ \[COPILOT CONTEXT\]/g;
+const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\]([\s\S]*?)\/\/ \[COPILOT CONTEXT\]/;
 
 const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact', 'scss'];
 
