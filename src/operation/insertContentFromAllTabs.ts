@@ -1,13 +1,8 @@
 import * as vscode from 'vscode';
 
-const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\r?\n/g;
-const blockCommentStartRegex = /\/\*/g;
-const blockCommentEndRegex = /\*\//g;
-const lineCommentRegex = /\/\/.*$/gm;
-const copilotContextRegexGlobal = /\/\/ \[COPILOT CONTEXT\]([\s\S]*?)\/\/ \[COPILOT CONTEXT\]/g;
-const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\]([\s\S]*?)\/\/ \[COPILOT CONTEXT\]/;
+import { languageCommentMap, regexFactory } from '../utils';
+import { marksConfig } from '../config';
 
-const activeEditorLanguageIdList = ['javascript', 'typescript', 'typescriptreact', 'javascriptreact', 'scss'];
 
 export function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
@@ -18,9 +13,6 @@ export function insertContentFromAllTabs() {
     }
 
     const activeDocumentUri = activeEditor.document.uri.toString();
-    if (!activeEditorLanguageIdList.includes(activeEditor.document.languageId)) {
-        return;
-    }
 
     let allFormattedContent = '';
     const addedFileUris: string[] = [];
@@ -30,12 +22,12 @@ export function insertContentFromAllTabs() {
         }
 
         let content = document.getText();
-        content = filterContent(content);
+        content = filterContent(content, document.languageId);
         if (!content) {
             return;
         }
 
-        const formattedContent = formatContentAsComments(content, document.uri.toString());
+        const formattedContent = formatContentAsComments(content, document.uri.toString(), document.languageId);
         allFormattedContent += formattedContent + "\n\n";
 
         addedFileUris.push(document.uri.toString());
@@ -44,7 +36,15 @@ export function insertContentFromAllTabs() {
     replaceEditorTopComment(activeEditor, allFormattedContent);
 }
 
-function filterContent(content: string): string {
+function filterContent(content: string, languageId: string): string {
+    const {
+        copilotContextRegexGlobal,
+        copilotContextBlockRegex,
+        commentBlockRegex,
+        blockCommentStartRegex,
+        blockCommentEndRegex,
+    } = regexFactory.getRegex(languageId);
+
     const filterCommentContent = content.replace(commentBlockRegex, '');
 
     const matches = filterCommentContent.match(copilotContextRegexGlobal);
@@ -57,7 +57,7 @@ function filterContent(content: string): string {
     let filteredContent = '';
     matches.forEach(match => {
         // 从每个匹配项中提取Start和End标签之间的内容
-        const matchContent = match.match(copilotContextRegex);
+        const matchContent = match.match(copilotContextBlockRegex);
         if (matchContent && matchContent[1]) {
             filteredContent += matchContent[1].trim() + "\n\n";
         }
@@ -66,11 +66,18 @@ function filterContent(content: string): string {
     return filteredContent.replace(blockCommentStartRegex, '').replace(blockCommentEndRegex, '');
 }
 
-function formatContentAsComments(content: string, fileUri: string): string {
-    return `// CHUNK START\n// file: ${fileUri}\n/**\n${content}\n*/\n// CHUNK END`;
+function formatContentAsComments(content: string, fileUri: string, languageId: string): string {
+    const { chunkStart, chunkEnd } = marksConfig.getMarksConfig();
+    const { lineString, blockStartString, blockEndString } = languageCommentMap.getLanguageComment(languageId);
+
+    return `${lineString} ${chunkStart}\n${lineString} file: ${fileUri}\n${blockStartString}\n${content}\n${blockEndString}\n${lineString} ${chunkEnd}`;
 }
 
 function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedContent: string) {
+    const {
+        commentBlockRegex,
+    } = regexFactory.getRegex(activeEditor.document.languageId);
+
     activeEditor.edit(editBuilder => {
         const commentBlockMatch = activeEditor.document.getText().match(commentBlockRegex);
         if (commentBlockMatch) {

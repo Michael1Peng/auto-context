@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
 
-export const commentBlockRegex = /\/\/ CHUNK START[\s\S]*?\/\/ CHUNK END\r?\n\r?\n/g;
+import { regexFactory } from '../utils';
 
 export async function removeTopCommentBlocks(document: vscode.TextDocument) {
-  let config = vscode.workspace.getConfiguration('auto-context');
-  let cleanCopilotContextCommentOnClose = config.get('cleanCopilotContextCommentOnClose');
-
+  const { commentBlockRegexWithLineBreak } = regexFactory.getRegex(document.languageId);
+  
   const fileUri = document.uri;
 
   if (fileUri.scheme !== 'file') {
@@ -17,7 +16,7 @@ export async function removeTopCommentBlocks(document: vscode.TextDocument) {
   let content = buffer.toString();
 
   // 移除特定格式的注释块
-  content = content.replace(commentBlockRegex, '');
+  content = content.replace(commentBlockRegexWithLineBreak, '');
 
   // 写回文件
   const writeData = Buffer.from(content, 'utf8');

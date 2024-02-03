@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 
-const copilotContextStartRegex = /\/\/ \[COPILOT CONTEXT\] Start\r?\n/;
 import { switchConfig } from '../config';
-
-const copilotContextRegex = /\/\/ \[COPILOT CONTEXT\]\r?\n/g;
+import { regexFactory } from '../utils';
 
 export async function removeContextCommentTag(document: vscode.TextDocument) {
+  const { copilotContextRegex } = regexFactory.getRegex(document.languageId);
+  
   const fileUri = document.uri;
 
   if (fileUri.scheme !== 'file') {
