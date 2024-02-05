@@ -4,7 +4,7 @@ import { switchConfig } from '../config';
 import { regexFactory } from '../utils';
 
 export async function removeContextCommentTag(document: vscode.TextDocument) {
-  const { copilotContextRegex } = regexFactory.getRegex(document.languageId);
+  const { copilotContextRegex, copilotContextAllRegex } = regexFactory.getRegex(document.languageId);
   
   const fileUri = document.uri;
 
@@ -20,6 +20,7 @@ export async function removeContextCommentTag(document: vscode.TextDocument) {
     // 移除特定格式的注释块
     if (switchConfig.getSwitch().cleanCopilotContextCommentOnClose) {
       content = content.replaceAll(copilotContextRegex, '');
+      content = content.replaceAll(copilotContextAllRegex, '');
     }
 
     // 写回文件

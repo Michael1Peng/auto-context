@@ -4,7 +4,7 @@
   "displayName": "auto-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.0.18",
+  "version": "0.0.20",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -38,6 +38,7 @@
           "type": "object",
           "default": {
             "copilotContext": "\\[COPILOT CONTEXT\\]",
+            "copilotContextAll": "\\[COPILOT CONTEXT\\] all",
             "chunkStart": "CHUNK START",  
             "chunkEnd": "CHUNK END"
           },

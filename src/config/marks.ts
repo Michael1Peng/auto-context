@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 interface MarksConfig {
   copilotContext: string;
+  copilotContextAll: string;
   chunkStart: string;
   chunkEnd: string;
 }

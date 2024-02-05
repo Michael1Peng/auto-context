@@ -38,16 +38,46 @@ export function insertContentFromAllTabs() {
 
 function filterContent(content: string, languageId: string): string {
     const {
-        copilotContextRegexGlobal,
-        copilotContextBlockRegex,
         commentBlockRegex,
         blockCommentStartRegex,
         blockCommentEndRegex,
+        copilotContextAllRegex,
     } = regexFactory.getRegex(languageId);
 
     const filterCommentContent = content.replace(commentBlockRegex, '');
 
-    const matches = filterCommentContent.match(copilotContextRegexGlobal);
+    // 将所有匹配的块拼接成一个字符串
+    let filteredContent = '';
+
+    filteredContent = findByAllRegex(filterCommentContent, languageId);
+
+    if (!filteredContent) {
+        filteredContent = findByGlobalRegex(filterCommentContent, languageId);
+    }
+
+    return filteredContent.replace(blockCommentStartRegex, '').replace(blockCommentEndRegex, '').replace(copilotContextAllRegex, '');
+}
+
+function findByAllRegex(content: string, languageId: string): string {
+    const {
+        copilotContextAllRegex,
+    } = regexFactory.getRegex(languageId);
+
+    const matches = content.match(copilotContextAllRegex);
+
+    if (matches) {
+        return content;
+    }
+    return '';
+}
+
+function findByGlobalRegex(content: string, languageId: string): string {
+    const {
+        copilotContextRegexGlobal,
+        copilotContextBlockRegex,
+    } = regexFactory.getRegex(languageId);
+
+    const matches = content.match(copilotContextRegexGlobal);
 
     if (!matches) {
         return '';
@@ -63,7 +93,7 @@ function filterContent(content: string, languageId: string): string {
         }
     });
 
-    return filteredContent.replace(blockCommentStartRegex, '').replace(blockCommentEndRegex, '');
+    return filteredContent;
 }
 
 function formatContentAsComments(content: string, fileUri: string, languageId: string): string {
