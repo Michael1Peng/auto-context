@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 
-import { languageCommentMap, regexFactory } from '../utils';
+import { languageCommentMap, regexFactory, position } from '../utils';
 import { marksConfig } from '../config';
 
-
-export function insertContentFromAllTabs() {
+export async function insertContentFromAllTabs() {
     const allOpenDocuments = vscode.workspace.textDocuments;
     const activeEditor = vscode.window.activeTextEditor;
 
@@ -32,8 +31,7 @@ export function insertContentFromAllTabs() {
 
         addedFileUris.push(document.uri.toString());
     });
-
-    replaceEditorTopComment(activeEditor, allFormattedContent);
+    await replaceEditorTopComment(activeEditor, allFormattedContent);
 }
 
 function filterContent(content: string, languageId: string): string {
@@ -103,24 +101,11 @@ function formatContentAsComments(content: string, fileUri: string, languageId: s
     return `${lineString} ${chunkStart}\n${lineString} file: ${fileUri}\n${blockStartString}\n${content}\n${blockEndString}\n${lineString} ${chunkEnd}`;
 }
 
-function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedContent: string) {
-    const {
-        commentBlockRegex,
-    } = regexFactory.getRegex(activeEditor.document.languageId);
-
-    activeEditor.edit(editBuilder => {
-        const commentBlockMatch = activeEditor.document.getText().match(commentBlockRegex);
-        if (commentBlockMatch) {
-            const startPosition = activeEditor.document.positionAt(0);
-
-            // 获取commentBlockMatch[0] 的长度，加上换行符数量来确定endPosition
-            let commentBlockLength = 0;
-            for (let i = 0; i < commentBlockMatch.length; i++) {
-                commentBlockLength += commentBlockMatch[i].length + 1;
-            }
-            const endPosition = activeEditor.document.positionAt(commentBlockLength);
-
-            const range = new vscode.Range(startPosition, endPosition);
+async function replaceEditorTopComment(activeEditor: vscode.TextEditor, formattedContent: string) {
+    await activeEditor.edit(editBuilder => {
+        const endPosition = position.getTopCommentBlockPosition();
+        if (endPosition) {
+            const range = new vscode.Range(new vscode.Position(0, 0), endPosition);
             editBuilder.replace(range, formattedContent);
         } else {
             const startOfDocument = activeEditor.document.positionAt(0);
