@@ -25,6 +25,6 @@ export async function insertCurrentFilePath() {
         }
 
         const insertionText = `${lineString} ${chunkStart}\n${lineString} Current File Path: ${filePath}\n${lineString} ${chunkEnd}\n\n`;
-        editBuilder.insert(endPosition.translate(1, 0), insertionText);
+        editBuilder.insert(endPosition, insertionText);
     });
 }
