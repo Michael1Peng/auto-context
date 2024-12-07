@@ -4,6 +4,7 @@ import { insertContentFromAllTabs } from './operation/insertContentFromAllTabs';
 import { OutputChannelManager } from './outputChannelManager';
 import { removeTopCommentBlocks } from './operation/removeTopCommentBlocks';
 import { removeContextCommentTag } from './operation/removeContextCommentTag';
+import { insertCurrentFilePath } from './operation/insertCurrentFilePath';
 import { registerCommands } from './commands';
 
 let isEdited = false;
@@ -25,16 +26,17 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(removeTopCommentBlocksListener);
 
-	let fileOpenListener = vscode.workspace.onDidChangeTextDocument(event => {
+	let fileOpenListener = vscode.workspace.onDidChangeTextDocument(async event => {
 		if (isEdited) {
 			return;
 		}
 
 		isEdited = true;
 		if (event.document === vscode.window.activeTextEditor?.document) {
-			insertContentFromAllTabs();
+			await insertContentFromAllTabs();
+			await insertCurrentFilePath();
 		}
 	});
-
+	
 	context.subscriptions.push(fileOpenListener);
 }

@@ -4,7 +4,7 @@
   "displayName": "auto-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.0.18",
+  "version": "0.0.22",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -33,6 +33,16 @@
           "type": "boolean",
           "default": true,
           "description": "关闭文件时清理copilot 标记"
+        },
+        "auto-context.marksConfig": {
+          "type": "object",
+          "default": {
+            "copilotContext": "\\[COPILOT CONTEXT\\]",
+            "copilotContextAll": "\\[COPILOT CONTEXT\\] all",
+            "chunkStart": "CHUNK START",  
+            "chunkEnd": "CHUNK END"
+          },
+          "description": "用于读取代码的标记配置"
         }
       }
     }
