@@ -4,7 +4,7 @@
   "displayName": "auto-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.0.22",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -39,7 +39,7 @@
           "default": {
             "copilotContext": "\\[COPILOT CONTEXT\\]",
             "copilotContextAll": "\\[COPILOT CONTEXT\\] all",
-            "chunkStart": "CHUNK START",  
+            "chunkStart": "CHUNK START",
             "chunkEnd": "CHUNK END"
           },
           "description": "用于读取代码的标记配置"
@@ -59,18 +59,19 @@
     "test": "node ./out/test/runTest.js"
   },
   "dependencies": {
-    "@types/vscode": "^1.84.0",
     "@types/mocha": "^10.0.3",
     "@types/node": "18.x",
+    "@types/vscode": "^1.84.0",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
+    "@vscode/test-electron": "^2.3.6",
     "eslint": "^8.52.0",
     "glob": "^10.3.10",
+    "ignore": "^6.0.2",
     "mocha": "^10.2.0",
-    "typescript": "^5.2.2",
     "ts-loader": "^9.5.0",
+    "typescript": "^5.2.2",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
-    "@vscode/test-electron": "^2.3.6"
+    "webpack-cli": "^5.1.4"
   }
 }

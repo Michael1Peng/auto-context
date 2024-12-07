@@ -1,42 +1,54 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+import ignore from 'ignore';
 
-import { insertContentFromAllTabs } from './operation/insertContentFromAllTabs';
-import { OutputChannelManager } from './outputChannelManager';
-import { removeTopCommentBlocks } from './operation/removeTopCommentBlocks';
-import { removeContextCommentTag } from './operation/removeContextCommentTag';
-import { insertCurrentFilePath } from './operation/insertCurrentFilePath';
-import { registerCommands } from './commands';
+interface FileData {
+	fileName: string;
+	content: string;
+}
 
-let isEdited = false;
-
+// TODO: 添加过滤 gitignore 匹配命中的文件
 export function activate(context: vscode.ExtensionContext) {
-	OutputChannelManager.initialize("auto-context");
-	OutputChannelManager.appendLine("auto-context activated.");
+	// Register configuration
+	let config = vscode.workspace.getConfiguration('autoContext');
+	let outputPath = config.get<string>('outputPath') || path.join(vscode.workspace.rootPath || '', 'context-output.txt');
+	let outputFormat = config.get<string>('outputFormat') || '<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n';
 
-	registerCommands(context);
+	// Function to get all open files and their contents
+	const getAllOpenFiles = (): FileData[] => {
+		const openFiles: FileData[] = [];
+		vscode.workspace.textDocuments.forEach(document => {
+			if (!document.isClosed &&
+				!document.isUntitled &&
+				!document.fileName.includes(outputPath)) {
+				openFiles.push({
+					fileName: document.fileName,
+					content: document.getText()
+				});
+			}
+		});
+		return openFiles;
+	};
 
-	let resetEditMarkListener = vscode.window.onDidChangeActiveTextEditor(() => {
-		isEdited = false;
+	// Function to write files data to output file
+	const writeToOutputFile = (files: FileData[]) => {
+		let output = '';
+		files.forEach(file => {
+			let fileOutput = outputFormat
+				.replace('${fileName}', file.fileName)
+				.replace('${content}', file.content);
+			output += fileOutput;
+		});
+
+		fs.writeFileSync(outputPath, output, 'utf8');
+	};
+
+	// Register file change event listener
+	let fileChangeDisposable = vscode.window.onDidChangeActiveTextEditor(() => {
+		const openFiles = getAllOpenFiles();
+		writeToOutputFile(openFiles);
 	});
-	context.subscriptions.push(resetEditMarkListener);
 
-	let removeTopCommentBlocksListener = vscode.workspace.onDidCloseTextDocument(async document => {
-		await removeTopCommentBlocks(document);
-		await removeContextCommentTag(document);
-	});
-	context.subscriptions.push(removeTopCommentBlocksListener);
-
-	let fileOpenListener = vscode.workspace.onDidChangeTextDocument(async event => {
-		if (isEdited) {
-			return;
-		}
-
-		isEdited = true;
-		if (event.document === vscode.window.activeTextEditor?.document) {
-			await insertContentFromAllTabs();
-			await insertCurrentFilePath();
-		}
-	});
-	
-	context.subscriptions.push(fileOpenListener);
+	context.subscriptions.push(fileChangeDisposable);
 }
