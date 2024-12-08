@@ -1,54 +1,126 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import ignore from 'ignore';
+import ignore, { Ignore } from 'ignore';
 
+// Types and interfaces
 interface FileData {
-	fileName: string;
+	filePath: string;
 	content: string;
 }
 
-// TODO: 添加过滤 gitignore 匹配命中的文件
-export function activate(context: vscode.ExtensionContext) {
-	// Register configuration
-	let config = vscode.workspace.getConfiguration('autoContext');
-	let outputPath = config.get<string>('outputPath') || path.join(vscode.workspace.rootPath || '', 'context-output.txt');
-	let outputFormat = config.get<string>('outputFormat') || '<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n';
+interface ExtensionConfig {
+	outputPath: string;
+	outputFormat: string;
+}
 
-	// Function to get all open files and their contents
-	const getAllOpenFiles = (): FileData[] => {
-		const openFiles: FileData[] = [];
-		vscode.workspace.textDocuments.forEach(document => {
-			if (!document.isClosed &&
-				!document.isUntitled &&
-				!document.fileName.includes(outputPath)) {
-				openFiles.push({
-					fileName: document.fileName,
-					content: document.getText()
-				});
+class ContextTracker {
+	private readonly outputPath: string;
+	private readonly outputFormat: string;
+	private readonly disposables: vscode.Disposable[] = [];
+	private readonly ignoreFilter: Ignore;
+
+	constructor(config: ExtensionConfig) {
+		this.outputPath = config.outputPath;
+		this.outputFormat = config.outputFormat;
+		this.ignoreFilter = ignore();
+		
+		// Initialize gitignore if it exists
+		const workspacePath = vscode.workspace.rootPath;
+		if (workspacePath) {
+			const gitignorePath = path.join(workspacePath, '.gitignore');
+			if (fs.existsSync(gitignorePath)) {
+				const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
+				this.ignoreFilter.add(gitignoreContent);
 			}
+		}
+	}
+
+	public initialize(): void {
+		const fileChangeListener = vscode.window.onDidChangeActiveTextEditor(() => {
+			this.handleFileChange();
 		});
-		return openFiles;
+		this.disposables.push(fileChangeListener);
+	}
+
+	public dispose(): void {
+		this.disposables.forEach(disposable => disposable.dispose());
+	}
+
+	private handleFileChange(): void {
+		try {
+			const openFiles = this.getOpenFiles();
+			this.writeOutput(openFiles);
+		} catch (error) {
+			this.handleError('Failed to process file change', error);
+		}
+	}
+
+	private getOpenFiles(): FileData[] {
+		return vscode.workspace.textDocuments
+			.filter(doc => this.isValidDocument(doc))
+			.map(doc => ({
+				filePath: doc.fileName,
+				content: doc.getText()
+			}));
+	}
+
+	private isValidDocument(document: vscode.TextDocument): boolean {
+		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath)) {
+			// Get relative path from workspace root for gitignore checking
+			const workspacePath = vscode.workspace.rootPath;
+			if (workspacePath) {
+				const relativePath = path.relative(workspacePath, document.fileName);
+				// Only check gitignore for files within workspace
+				if (!relativePath.startsWith('..') && !path.isAbsolute(relativePath)) {
+					return !this.ignoreFilter.ignores(relativePath);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	private writeOutput(files: FileData[]): void {
+		try {
+			const formattedOutput = this.formatOutput(files);
+			fs.writeFileSync(this.outputPath, formattedOutput, 'utf8');
+		} catch (error) {
+			this.handleError('Failed to write output file', error);
+		}
+	}
+
+	private formatOutput(files: FileData[]): string {
+		return files.map(file => 
+			this.outputFormat
+				.replace('${fileName}', file.filePath)
+				.replace('${content}', file.content)
+		).join('');
+	}
+
+	private handleError(message: string, error: unknown): void {
+		const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+		vscode.window.showErrorMessage(`${message}: ${errorMessage}`);
+		console.error(message, error);
+	}
+}
+
+export function activate(context: vscode.ExtensionContext): void {
+	const config = loadConfiguration();
+	const contextTracker = new ContextTracker(config);
+	
+	contextTracker.initialize();
+	context.subscriptions.push({ dispose: () => contextTracker.dispose() });
+}
+
+function loadConfiguration(): ExtensionConfig {
+	const config = vscode.workspace.getConfiguration('autoContext');
+	const workspacePath = vscode.workspace.rootPath || '';
+	
+	return {
+		outputPath: config.get<string>('outputPath') || 
+			path.join(workspacePath, 'context-output.txt'),
+		outputFormat: config.get<string>('outputFormat') || 
+			'<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n'
 	};
-
-	// Function to write files data to output file
-	const writeToOutputFile = (files: FileData[]) => {
-		let output = '';
-		files.forEach(file => {
-			let fileOutput = outputFormat
-				.replace('${fileName}', file.fileName)
-				.replace('${content}', file.content);
-			output += fileOutput;
-		});
-
-		fs.writeFileSync(outputPath, output, 'utf8');
-	};
-
-	// Register file change event listener
-	let fileChangeDisposable = vscode.window.onDidChangeActiveTextEditor(() => {
-		const openFiles = getAllOpenFiles();
-		writeToOutputFile(openFiles);
-	});
-
-	context.subscriptions.push(fileChangeDisposable);
 }
