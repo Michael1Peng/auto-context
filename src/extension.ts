@@ -84,6 +84,12 @@ class ContextTracker {
 	private writeOutput(files: FileData[]): void {
 		try {
 			const formattedOutput = this.formatOutput(files);
+			
+			const outputDir = path.dirname(this.outputPath);
+			if (!fs.existsSync(outputDir)) {
+				fs.mkdirSync(outputDir, { recursive: true });
+			}
+
 			fs.writeFileSync(this.outputPath, formattedOutput, 'utf8');
 		} catch (error) {
 			this.handleError('Failed to write output file', error);
@@ -118,8 +124,7 @@ function loadConfiguration(): ExtensionConfig {
 	const workspacePath = vscode.workspace.rootPath || '';
 	
 	return {
-		outputPath: config.get<string>('outputPath') || 
-			path.join(workspacePath, 'context-output.txt'),
+		outputPath: path.join(workspacePath, config.get<string>('outputPath') || 'context-output.txt'),
 		outputFormat: config.get<string>('outputFormat') || 
 			'<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n'
 	};
