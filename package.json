@@ -29,20 +29,15 @@
     "configuration": {
       "title": "Auto Context",
       "properties": {
-        "auto-context.cleanCopilotContextCommentOnClose": {
-          "type": "boolean",
-          "default": true,
-          "description": "关闭文件时清理copilot 标记"
+        "autoContext.outputPath": {
+          "type": "string",
+          "default": "context-output.txt",
+          "description": "The path where the context output file will be saved"
         },
-        "auto-context.marksConfig": {
-          "type": "object",
-          "default": {
-            "copilotContext": "\\[COPILOT CONTEXT\\]",
-            "copilotContextAll": "\\[COPILOT CONTEXT\\] all",
-            "chunkStart": "CHUNK START",
-            "chunkEnd": "CHUNK END"
-          },
-          "description": "用于读取代码的标记配置"
+        "autoContext.outputFormat": {
+          "type": "string",
+          "default": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
+          "description": "The format template for the output file. Use ${fileName} and ${content} as placeholders"
         }
       }
     }
