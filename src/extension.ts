@@ -57,7 +57,23 @@ class ContextTracker {
 	}
 
 	private getOpenFiles(): FileData[] {
-		return vscode.workspace.textDocuments
+		const openTabs: vscode.TextDocument[] = [];
+		
+		// Get all tab groups and their tabs
+		vscode.window.tabGroups.all.forEach(group => {
+			group.tabs.forEach(tab => {
+				if (tab.input instanceof vscode.TabInputText) {
+					const doc = vscode.workspace.textDocuments.find(
+						doc => doc.uri.toString() === (tab?.input as vscode.TabInputText)?.uri.toString()
+					);
+					if (doc) {
+						openTabs.push(doc);
+					}
+				}
+			});
+		});
+
+		return openTabs
 			.filter(doc => this.isValidDocument(doc))
 			.map(doc => {
 				const workspacePath = vscode.workspace.rootPath;
@@ -70,7 +86,7 @@ class ContextTracker {
 	}
 
 	private isValidDocument(document: vscode.TextDocument): boolean {
-		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath)) {
+		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath) && document.uri.scheme === 'file') {
 			// Get relative path from workspace root for gitignore checking
 			const workspacePath = vscode.workspace.rootPath;
 			if (workspacePath) {

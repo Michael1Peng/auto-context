@@ -34,7 +34,7 @@
 				"npm: watch",
 				"npm: watch-tests"
 			],
-			"problemMatcher": []
+			"problemMatcher": ["$ts-webpack-watch", "$tsc-watch"]
 		}
 	]
 }
