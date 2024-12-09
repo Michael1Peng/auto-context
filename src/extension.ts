@@ -12,17 +12,20 @@ interface FileData {
 interface ExtensionConfig {
 	outputPath: string;
 	outputFormat: string;
+	shouldOutput: boolean;
 }
 
 class ContextTracker {
 	private readonly outputPath: string;
 	private readonly outputFormat: string;
+	private readonly shouldOutput: boolean;
 	private readonly disposables: vscode.Disposable[] = [];
 	private readonly ignoreFilter: Ignore;
 
 	constructor(config: ExtensionConfig) {
 		this.outputPath = config.outputPath;
 		this.outputFormat = config.outputFormat;
+		this.shouldOutput = config.shouldOutput;
 		this.ignoreFilter = ignore();
 		
 		// Initialize gitignore if it exists
@@ -48,6 +51,9 @@ class ContextTracker {
 	}
 
 	private handleFileChange(): void {
+		if (!this.shouldOutput) {
+			return;
+		}
 		try {
 			const openFiles = this.getOpenFiles();
 			this.writeOutput(openFiles);
@@ -146,6 +152,7 @@ function loadConfiguration(): ExtensionConfig {
 	return {
 		outputPath: path.join(workspacePath, config.get<string>('outputPath') || 'context-output.txt'),
 		outputFormat: config.get<string>('outputFormat') || 
-			'<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n'
+			'<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n',
+		shouldOutput: config.get<boolean>('shouldOutput') || false
 	};
 }
