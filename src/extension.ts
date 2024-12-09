@@ -59,10 +59,14 @@ class ContextTracker {
 	private getOpenFiles(): FileData[] {
 		return vscode.workspace.textDocuments
 			.filter(doc => this.isValidDocument(doc))
-			.map(doc => ({
-				filePath: doc.fileName,
-				content: doc.getText()
-			}));
+			.map(doc => {
+				const workspacePath = vscode.workspace.rootPath;
+				const relativePath = workspacePath ? path.relative(workspacePath, doc.fileName) : doc.fileName;
+				return {
+					filePath: relativePath,
+					content: doc.getText()
+				};
+			});
 	}
 
 	private isValidDocument(document: vscode.TextDocument): boolean {
