@@ -76,6 +76,12 @@ class ContextTracker {
 						openTabs.push(doc);
 					}
 				}
+				
+				vscode.workspace.textDocuments.forEach(doc => {
+					if (doc.uri.scheme === 'search-editor' && !openTabs.some(existingDoc => existingDoc.uri.toString() === doc.uri.toString())) {
+						openTabs.push(doc);
+					}
+				});
 			});
 		});
 
@@ -92,7 +98,7 @@ class ContextTracker {
 	}
 
 	private isValidDocument(document: vscode.TextDocument): boolean {
-		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath) && document.uri.scheme === 'file') {
+		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath) && (document.uri.scheme === 'file' || document.uri.scheme === 'search-editor')) {
 			// Get relative path from workspace root for gitignore checking
 			const workspacePath = vscode.workspace.rootPath;
 			if (workspacePath) {
