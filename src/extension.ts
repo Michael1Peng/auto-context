@@ -13,12 +13,14 @@ interface ExtensionConfig {
 	outputPath: string;
 	outputFormat: string;
 	shouldOutput: boolean;
+	ignorePinnedTabs: boolean;
 }
 
 class ContextTracker {
 	private readonly outputPath: string;
 	private readonly outputFormat: string;
 	private readonly shouldOutput: boolean;
+	private readonly ignorePinnedTabs: boolean;
 	private readonly disposables: vscode.Disposable[] = [];
 	private readonly ignoreFilter: Ignore;
 
@@ -26,6 +28,7 @@ class ContextTracker {
 		this.outputPath = config.outputPath;
 		this.outputFormat = config.outputFormat;
 		this.shouldOutput = config.shouldOutput;
+		this.ignorePinnedTabs = config.ignorePinnedTabs;
 		this.ignoreFilter = ignore();
 		
 		// Initialize gitignore if it exists
@@ -68,6 +71,10 @@ class ContextTracker {
 		// Get all tab groups and their tabs
 		vscode.window.tabGroups.all.forEach(group => {
 			group.tabs.forEach(tab => {
+				if (this.ignorePinnedTabs && tab.isPinned) {
+					return;
+				}
+				
 				if (tab.input instanceof vscode.TabInputText) {
 					const doc = vscode.workspace.textDocuments.find(
 						doc => doc.uri.toString() === (tab?.input as vscode.TabInputText)?.uri.toString()
@@ -159,6 +166,7 @@ function loadConfiguration(): ExtensionConfig {
 		outputPath: path.join(workspacePath, config.get<string>('outputPath') || 'context-output.txt'),
 		outputFormat: config.get<string>('outputFormat') || 
 			'<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n',
-		shouldOutput: config.get<boolean>('shouldOutput') || false
+		shouldOutput: config.get<boolean>('shouldOutput') || false,
+		ignorePinnedTabs: config.get<boolean>('ignorePinnedTabs') || false
 	};
 }

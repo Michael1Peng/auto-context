@@ -4,7 +4,7 @@
   "displayName": "auto-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -17,7 +17,7 @@
   ],
   "activationEvents": [
     "onLanguage"
-  ],
+  ], 
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -43,6 +43,11 @@
           "type": "boolean",
           "default": false,
           "description": "Whether to output the context file when files change"
+        },
+        "autoContext.ignorePinnedTabs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to ignore pinned tabs when collecting context"
         }
       }
     }
