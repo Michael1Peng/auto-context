@@ -4,29 +4,31 @@ import * as path from 'path';
 import ignore, { Ignore } from 'ignore';
 
 // Types and interfaces
+interface OutputConfig {
+	path: string;
+	format: string;
+}
+
 interface FileData {
 	filePath: string;
 	content: string;
 }
 
 interface ExtensionConfig {
-	outputPath: string;
-	outputFormat: string;
+	outputList: OutputConfig[];
 	shouldOutput: boolean;
 	ignorePinnedTabs: boolean;
 }
 
 class ContextTracker {
-	private readonly outputPath: string;
-	private readonly outputFormat: string;
+	private readonly outputList: OutputConfig[];
 	private readonly shouldOutput: boolean;
 	private readonly ignorePinnedTabs: boolean;
 	private readonly disposables: vscode.Disposable[] = [];
 	private readonly ignoreFilter: Ignore;
 
 	constructor(config: ExtensionConfig) {
-		this.outputPath = config.outputPath;
-		this.outputFormat = config.outputFormat;
+		this.outputList = config.outputList;
 		this.shouldOutput = config.shouldOutput;
 		this.ignorePinnedTabs = config.ignorePinnedTabs;
 		this.ignoreFilter = ignore();
@@ -105,7 +107,9 @@ class ContextTracker {
 	}
 
 	private isValidDocument(document: vscode.TextDocument): boolean {
-		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath) && (document.uri.scheme === 'file' || document.uri.scheme === 'search-editor')) {
+		if (!document.isClosed && !document.isUntitled && 
+			!this.outputList.some(output => document.fileName.includes(output.path)) && 
+			(document.uri.scheme === 'file' || document.uri.scheme === 'search-editor')) {
 			// Get relative path from workspace root for gitignore checking
 			const workspacePath = vscode.workspace.rootPath;
 			if (workspacePath) {
@@ -122,22 +126,24 @@ class ContextTracker {
 
 	private writeOutput(files: FileData[]): void {
 		try {
-			const formattedOutput = this.formatOutput(files);
-			
-			const outputDir = path.dirname(this.outputPath);
-			if (!fs.existsSync(outputDir)) {
-				fs.mkdirSync(outputDir, { recursive: true });
-			}
+			this.outputList.forEach(output => {
+				const formattedOutput = this.formatOutput(files, output.format);
+				
+				const outputDir = path.dirname(output.path);
+				if (!fs.existsSync(outputDir)) {
+					fs.mkdirSync(outputDir, { recursive: true });
+				}
 
-			fs.writeFileSync(this.outputPath, formattedOutput, 'utf8');
+				fs.writeFileSync(output.path, formattedOutput, 'utf8');
+			});
 		} catch (error) {
-			this.handleError('Failed to write output file', error);
+			this.handleError('Failed to write output files', error);
 		}
 	}
 
-	private formatOutput(files: FileData[]): string {
+	private formatOutput(files: FileData[], format: string): string {
 		return files.map(file => 
-			this.outputFormat
+			format
 				.replace('${fileName}', file.filePath)
 				.replace('${content}', file.content)
 		).join('');
@@ -162,10 +168,24 @@ function loadConfiguration(): ExtensionConfig {
 	const config = vscode.workspace.getConfiguration('autoContext');
 	const workspacePath = vscode.workspace.rootPath || '';
 	
+	// Get the output list from configuration
+	const configOutputList = config.get<OutputConfig[]>('outputList') || [];
+	
+	// If no output list is configured, create a default one
+	const outputList = configOutputList.length > 0 ? configOutputList : [{
+		path: path.join(workspacePath, 'context-output.txt'),
+		format: '<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n'
+	}];
+
+	// Ensure all paths are absolute
+	outputList.forEach(output => {
+		if (!path.isAbsolute(output.path)) {
+			output.path = path.join(workspacePath, output.path);
+		}
+	});
+	
 	return {
-		outputPath: path.join(workspacePath, config.get<string>('outputPath') || 'context-output.txt'),
-		outputFormat: config.get<string>('outputFormat') || 
-			'<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n',
+		outputList,
 		shouldOutput: config.get<boolean>('shouldOutput') || false,
 		ignorePinnedTabs: config.get<boolean>('ignorePinnedTabs') || false
 	};
