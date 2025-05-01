@@ -7,6 +7,7 @@ import ignore, { Ignore } from 'ignore';
 interface OutputConfig {
 	path: string;
 	format: string;
+	prependContent?: string;
 }
 
 interface FileData {
@@ -128,13 +129,16 @@ class ContextTracker {
 		try {
 			this.outputList.forEach(output => {
 				const formattedOutput = this.formatOutput(files, output.format);
+				const finalOutput = output.prependContent ? 
+					`${output.prependContent}\n${formattedOutput}` : 
+					formattedOutput;
 				
 				const outputDir = path.dirname(output.path);
 				if (!fs.existsSync(outputDir)) {
 					fs.mkdirSync(outputDir, { recursive: true });
 				}
 
-				fs.writeFileSync(output.path, formattedOutput, 'utf8');
+				fs.writeFileSync(output.path, finalOutput, 'utf8');
 			});
 		} catch (error) {
 			this.handleError('Failed to write output files', error);
