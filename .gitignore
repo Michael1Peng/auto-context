@@ -1,5 +1,7 @@
 out
 dist
+.cursor/rules/context-output.mdc
+.cursor/rules/example.mdc
 output
 node_modules
 .vscode-test/
