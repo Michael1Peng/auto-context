@@ -90,18 +90,41 @@ function processConfig(config) {
     return executeRepomix({ path: pathArg, options: args });
 }
 
+// Deep merge utility
+function deepMerge(target, source) {
+    if (typeof target !== 'object' || target === null) return source;
+    if (typeof source !== 'object' || source === null) return target;
+    const result = Array.isArray(target) ? [...target] : { ...target };
+    for (const key of Object.keys(source)) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            result[key] = deepMerge(target[key], source[key]);
+        } else {
+            result[key] = source[key];
+        }
+    }
+    return result;
+}
+
 // Example usage:
-const config = {
+const defaultConfig = {
     path: '.',
     output: {
-        filePath: 'repomix-output.txt',
         style: 'plain',
     },
-    include: ['src/**/*', 'package.json'],
     ignore: {
         useGitignore: true,
     },
 };
 
-const result = processConfig(config);
+const configList = [
+    {
+        include: ['src/**/*', 'package.json'],
+        output: {
+            filePath: 'output/src.md',
+            style: 'markdown',
+        }
+    }
+].map(config => deepMerge(defaultConfig, config));
+
+const result = configList.map(config => processConfig(config));
 console.log(result);
