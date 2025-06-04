@@ -1,0 +1,130 @@
+<context>
+# Overview  
+Auto Copilot Context is a Visual Studio Code extension designed to automatically track and export the content of open files to provide AI systems with relevant context for code assistance. The extension monitors file changes, respects gitignore rules, and outputs formatted content that can be consumed by AI coding assistants like Cursor, Copilot, and other LLMs. This solves the problem of manually providing context to AI systems and ensures they always have up-to-date information about the user's current working files.
+
+# Core Features  
+1. **Automatic Context Tracking**: Monitors VS Code file changes and open tabs in real-time
+2. **Multiple Output Formats**: Supports configurable output formats for different AI systems
+3. **Gitignore Integration**: Respects .gitignore rules to avoid including unwanted files
+4. **Pinned Tab Management**: Option to include or exclude pinned tabs from context
+5. **Multi-Output Support**: Can generate multiple output files simultaneously with different formats
+6. **File Filtering**: Smart filtering to exclude irrelevant files (untitled, closed, output files)
+7. **Template System**: Customizable output templates with variable substitution
+
+# User Experience  
+**Primary User Persona**: Developers using AI coding assistants who want seamless context sharing
+**Key User Flows**:
+1. Install extension → Configure output settings → Enable auto-output → AI gets context automatically
+2. Open/close files → Extension tracks changes → Updates context files → AI has latest context
+3. Configure custom output formats → Extension adapts to different AI system requirements
+
+**UI/UX Considerations**:
+- Minimal UI footprint - works transparently in background
+- Configuration through VS Code settings
+- Error notifications for issues
+- Command palette integration for manual actions
+</context>
+
+<PRD>
+# Technical Architecture  
+**System Components**:
+- ContextTracker: Core class managing file monitoring and output generation
+- Configuration Manager: Handles extension settings and validation
+- File Filter System: Gitignore integration and file validation
+- Output Formatter: Template processing and multi-format support
+
+**Data Models**:
+- FileData: { filePath: string, content: string }
+- ExtensionConfig: Output paths, formats, flags
+- OutputConfiguration: Path, format template, prepend content
+
+**APIs and Integrations**:
+- VS Code Extension API for file monitoring
+- File system API for reading/writing
+- Gitignore parser for file filtering
+- VS Code configuration API
+
+**Infrastructure Requirements**:
+- VS Code 1.84.0+ compatibility
+- Node.js/TypeScript runtime
+- Webpack bundling for distribution
+
+# Development Roadmap  
+**Phase 1 - MVP Enhancement** (Current State Improvement):
+- Refactor existing codebase for better maintainability
+- Improve error handling and logging
+- Add comprehensive unit tests
+- Fix configuration reload issues
+- Enhance file filtering logic
+
+**Phase 2 - Advanced Features**:
+- Add real-time configuration updates without restart
+- Implement file content caching for performance
+- Add workspace-specific configurations
+- Support for custom file extensions and patterns
+- Add command for manual context refresh
+
+**Phase 3 - AI Integration Features**:
+- Direct integration with popular AI APIs
+- Smart context window management
+- Semantic file prioritization
+- Context history and versioning
+- Performance analytics and optimization
+
+**Phase 4 - Enterprise Features**:
+- Team sharing capabilities
+- Advanced security and privacy controls
+- Scalability improvements for large codebases
+- Integration with popular development workflows
+
+# Logical Dependency Chain
+**Foundation (Phase 1)**:
+1. Code refactoring and cleanup - establishes maintainable base
+2. Configuration system overhaul - enables reliable settings management
+3. File monitoring improvements - ensures accurate context tracking
+4. Output formatting enhancement - provides flexible AI integration
+
+**Core Functionality (Phase 2)**:
+5. Real-time updates - requires stable foundation from Phase 1
+6. Performance optimization - builds on improved file monitoring
+7. Advanced filtering - extends basic file filtering capabilities
+8. Command palette integration - requires stable core functionality
+
+**Advanced Features (Phase 3)**:
+9. AI API integration - requires robust output formatting
+10. Smart context management - builds on performance optimizations
+11. Semantic analysis - requires stable file processing pipeline
+12. Analytics - requires all core features to be stable
+
+# Risks and Mitigations  
+**Technical Challenges**:
+- Risk: Performance impact on large codebases
+- Mitigation: Implement file content caching and lazy loading
+
+- Risk: Configuration complexity for users
+- Mitigation: Provide sensible defaults and configuration wizards
+
+**MVP Focus**:
+- Prioritize reliability over features
+- Ensure backward compatibility with existing configurations
+- Focus on core use case: automatic context for AI systems
+
+**Resource Constraints**:
+- Use existing VS Code APIs to minimize dependencies
+- Leverage TypeScript for type safety and maintainability
+- Implement incremental improvements rather than complete rewrites
+
+# Appendix  
+**Technical Specifications**:
+- Target: VS Code Extension Marketplace
+- Language: TypeScript
+- Build: Webpack
+- Testing: Mocha framework
+- Package manager: pnpm
+
+**Research Findings**:
+- Current codebase has basic functionality but needs architectural improvements
+- Multiple output support is partially implemented but needs enhancement
+- Error handling and user feedback need significant improvement
+- Performance considerations for large workspaces not fully addressed
+</PRD> 

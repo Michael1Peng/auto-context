@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
 
 # File Summary
@@ -219,7 +224,7 @@ class ContextTracker {
 				}
 				
 				vscode.workspace.textDocuments.forEach(doc => {
-					if (doc.uri.scheme === 'search-editor' && !openTabs.some(existingDoc => existingDoc.uri.toString() === doc.uri.toString())) {
+					if (doc.uri.scheme === 'search_files-editor' && !openTabs.some(existingDoc => existingDoc.uri.toString() === doc.uri.toString())) {
 						openTabs.push(doc);
 					}
 				});
@@ -239,7 +244,7 @@ class ContextTracker {
 	}
 
 	private isValidDocument(document: vscode.TextDocument): boolean {
-		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath) && (document.uri.scheme === 'file' || document.uri.scheme === 'search-editor')) {
+		if (!document.isClosed && !document.isUntitled && !document.fileName.includes(this.outputPath) && (document.uri.scheme === 'file' || document.uri.scheme === 'search_files-editor')) {
 			// Get relative path from workspace root for gitignore checking
 			const workspacePath = vscode.workspace.rootPath;
 			if (workspacePath) {
