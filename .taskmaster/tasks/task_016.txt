@@ -139,7 +139,7 @@ private writeOutput(files: FileData[]): void {
 - 保持单工作区环境的向后兼容性
 - 添加错误隔离机制
 
-## 2. 实现文件跟踪和清理功能 [in-progress]
+## 2. 实现文件跟踪和清理功能 [done]
 ### Dependencies: 16.1
 ### Description: 添加输出文件跟踪机制，并在窗口关闭时自动清理文件
 ### Details:
@@ -148,7 +148,7 @@ private writeOutput(files: FileData[]): void {
 - 实现 cleanupOutputFiles 方法删除跟踪的文件
 - 在 dispose 方法中确保文件清理
 
-## 3. 添加测试用例 [pending]
+## 3. 添加测试用例 [in-progress]
 ### Dependencies: 16.2
 ### Description: 为多工作区输出和文件清理功能添加全面的测试用例
 ### Details:
