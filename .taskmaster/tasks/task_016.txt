@@ -1,6 +1,6 @@
 # Task ID: 16
 # Title: 实现多工作区输出支持
-# Status: pending
+# Status: done
 # Dependencies: 2, 4, 10
 # Priority: high
 # Description: 扩展当前的 auto context 插件，支持在 VS Code 多工作区环境下将上下文输出到不同的工作区目录中。
@@ -148,7 +148,7 @@ private writeOutput(files: FileData[]): void {
 - 实现 cleanupOutputFiles 方法删除跟踪的文件
 - 在 dispose 方法中确保文件清理
 
-## 3. 添加测试用例 [in-progress]
+## 3. 添加测试用例 [done]
 ### Dependencies: 16.2
 ### Description: 为多工作区输出和文件清理功能添加全面的测试用例
 ### Details:
