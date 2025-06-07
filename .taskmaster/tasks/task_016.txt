@@ -1,6 +1,6 @@
 # Task ID: 16
 # Title: 实现多工作区输出支持
-# Status: deferred
+# Status: pending
 # Dependencies: 2, 4, 10
 # Priority: high
 # Description: 扩展当前的 auto context 插件，支持在 VS Code 多工作区环境下将上下文输出到不同的工作区目录中。
@@ -128,3 +128,43 @@ private writeOutput(files: FileData[]): void {
 4. 测试工作区名称过滤功能
 5. 验证配置更新时的实时响应
 6. 测试边界情况（空工作区、无权限目录等）
+
+# Subtasks:
+## 1. 实现多工作区输出逻辑 [pending]
+### Dependencies: 16.4
+### Description: 修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录
+### Details:
+- 使用 vscode.workspace.workspaceFolders 检测多工作区
+- 在多工作区环境下遍历所有文件夹并输出
+- 保持单工作区环境的向后兼容性
+- 添加错误隔离机制
+
+## 2. 实现文件跟踪和清理功能 [pending]
+### Dependencies: 16.1
+### Description: 添加输出文件跟踪机制，并在窗口关闭时自动清理文件
+### Details:
+- 添加 outputFiles Set 来跟踪所有输出文件
+- 监听窗口关闭事件
+- 实现 cleanupOutputFiles 方法删除跟踪的文件
+- 在 dispose 方法中确保文件清理
+
+## 3. 添加测试用例 [pending]
+### Dependencies: 16.2
+### Description: 为多工作区输出和文件清理功能添加全面的测试用例
+### Details:
+- 单工作区兼容性测试
+- 多工作区功能测试
+- 文件清理测试
+- 错误处理测试
+- 边界情况测试
+
+## 4. 抽象writeOutput为独立模块 [pending]
+### Dependencies: None
+### Description: 将ContextTracker中的writeOutput逻辑抽象为独立的OutputWriter模块，提高代码可维护性和可测试性
+### Details:
+- 创建新的OutputWriter类负责文件输出逻辑
+- 将writeOutput相关代码从ContextTracker中分离
+- 设计清晰的接口用于依赖注入
+- 保持现有功能不变，只进行代码重构
+- 为后续多工作区功能扩展做准备
+

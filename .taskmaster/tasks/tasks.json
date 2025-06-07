@@ -216,8 +216,51 @@
         4,
         10
       ],
-      "status": "deferred",
-      "subtasks": []
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "实现多工作区输出逻辑",
+          "description": "修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录",
+          "details": "- 使用 vscode.workspace.workspaceFolders 检测多工作区\n- 在多工作区环境下遍历所有文件夹并输出\n- 保持单工作区环境的向后兼容性\n- 添加错误隔离机制",
+          "status": "pending",
+          "dependencies": [
+            "16.4"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 2,
+          "title": "实现文件跟踪和清理功能",
+          "description": "添加输出文件跟踪机制，并在窗口关闭时自动清理文件",
+          "details": "- 添加 outputFiles Set 来跟踪所有输出文件\n- 监听窗口关闭事件\n- 实现 cleanupOutputFiles 方法删除跟踪的文件\n- 在 dispose 方法中确保文件清理",
+          "status": "pending",
+          "dependencies": [
+            "16.1"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 3,
+          "title": "添加测试用例",
+          "description": "为多工作区输出和文件清理功能添加全面的测试用例",
+          "details": "- 单工作区兼容性测试\n- 多工作区功能测试\n- 文件清理测试\n- 错误处理测试\n- 边界情况测试",
+          "status": "pending",
+          "dependencies": [
+            "16.2"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 4,
+          "title": "抽象writeOutput为独立模块",
+          "description": "将ContextTracker中的writeOutput逻辑抽象为独立的OutputWriter模块，提高代码可维护性和可测试性",
+          "details": "- 创建新的OutputWriter类负责文件输出逻辑\n- 将writeOutput相关代码从ContextTracker中分离\n- 设计清晰的接口用于依赖注入\n- 保持现有功能不变，只进行代码重构\n- 为后续多工作区功能扩展做准备",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 16
+        }
+      ]
     },
     {
       "id": 17,
