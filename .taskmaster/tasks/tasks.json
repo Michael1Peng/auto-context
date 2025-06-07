@@ -223,7 +223,7 @@
           "title": "实现多工作区输出逻辑",
           "description": "修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录",
           "details": "- 使用 vscode.workspace.workspaceFolders 检测多工作区\n- 在多工作区环境下遍历所有文件夹并输出\n- 保持单工作区环境的向后兼容性\n- 添加错误隔离机制",
-          "status": "pending",
+          "status": "in-progress",
           "dependencies": [
             "16.4"
           ],
@@ -256,7 +256,7 @@
           "title": "抽象writeOutput为独立模块",
           "description": "将ContextTracker中的writeOutput逻辑抽象为独立的OutputWriter模块，提高代码可维护性和可测试性",
           "details": "- 创建新的OutputWriter类负责文件输出逻辑\n- 将writeOutput相关代码从ContextTracker中分离\n- 设计清晰的接口用于依赖注入\n- 保持现有功能不变，只进行代码重构\n- 为后续多工作区功能扩展做准备",
-          "status": "pending",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 16
         }

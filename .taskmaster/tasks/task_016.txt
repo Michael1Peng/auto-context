@@ -130,7 +130,7 @@ private writeOutput(files: FileData[]): void {
 6. 测试边界情况（空工作区、无权限目录等）
 
 # Subtasks:
-## 1. 实现多工作区输出逻辑 [pending]
+## 1. 实现多工作区输出逻辑 [in-progress]
 ### Dependencies: 16.4
 ### Description: 修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录
 ### Details:
@@ -158,7 +158,7 @@ private writeOutput(files: FileData[]): void {
 - 错误处理测试
 - 边界情况测试
 
-## 4. 抽象writeOutput为独立模块 [pending]
+## 4. 抽象writeOutput为独立模块 [done]
 ### Dependencies: None
 ### Description: 将ContextTracker中的writeOutput逻辑抽象为独立的OutputWriter模块，提高代码可维护性和可测试性
 ### Details:

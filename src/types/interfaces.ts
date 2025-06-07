@@ -8,9 +8,10 @@ export interface FileData {
 
 // 输出配置接口
 export interface OutputConfig {
-  path: string;
-  format: string;
-  prependContent?: string;
+	path: string;
+	relativePath?: string;
+	format: string;
+	prependContent?: string;
 }
 
 // 扩展配置接口
