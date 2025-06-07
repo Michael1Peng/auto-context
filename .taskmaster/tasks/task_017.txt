@@ -1,0 +1,163 @@
+# Task ID: 17
+# Title: 重构 ContextTracker 实现单一职责原则
+# Status: in-progress
+# Dependencies: 1, 2, 3, 4, 7
+# Priority: high
+# Description: 重构 ContextTracker 类已完成，拆分为多个专门的类，实现了单一职责原则。现在需要添加单元测试并进行功能验证。
+# Details:
+重构第一阶段（代码拆分）已完成，具体成果如下：
+
+- 目录结构已调整：
+  ```
+  src/
+    ├── types/
+    │   └── interfaces.ts   # 定义所有接口
+    ├── core/
+    │   ├── ContextTracker.ts
+    │   ├── FileCollector.ts
+    │   └── ... 
+    ├── services/
+    │   ├── FileFilter.ts
+    │   ├── OutputFormatter.ts
+    │   └── ...
+    ├── utils/
+    │   ├── logger.ts
+    │   ├── errorHandler.ts
+    │   └── ...
+    └── extension.ts
+  ```
+
+- 成功拆分原始类：
+  - ConfigurationManager - 配置管理
+  - FileFilter - 文件过滤（包含gitignore支持）
+  - FileCollector - 收集打开的文件
+  - OutputFormatter - 格式化输出
+  - ErrorHandler - 错误处理
+  - ContextTracker - 作为协调器
+
+- 功能完整性：所有原有功能保留，无新增功能，编译无错误
+
+- 实现单一职责原则：
+  - 每个类职责单一
+  - 使用依赖注入模式
+  - 接口定义清晰（位于src/types/interfaces.ts）
+
+重构成果：
+- 197行单一文件拆分为6个专门类
+- 代码可维护性大幅提升
+- 为单元测试奠定基础
+
+下一步：
+1. 添加单元测试覆盖
+2. 进行功能验证测试
+3. 考虑性能优化机会
+
+# Test Strategy:
+1. 单元测试：
+   - 为每个新创建的类编写单元测试，确保它们独立工作正常：
+   ```typescript
+   // FileCollector.test.ts
+   describe('FileCollector', () => {
+     let fileCollector: FileCollector;
+     let mockWorkspace: vscode.WorkspaceFolder;
+     
+     beforeEach(() => {
+       mockWorkspace = { uri: { fsPath: '/test/path' } } as vscode.WorkspaceFolder;
+       fileCollector = new FileCollector(mockWorkspace);
+     });
+     
+     test('getOpenFiles should return only files from current workspace', async () => {
+       // 模拟 vscode.workspace.textDocuments
+       // 验证过滤逻辑
+     });
+     
+     // 更多测试...
+   });
+   ```
+
+2. 集成测试：
+   - 测试重构后的 ContextTracker 与其他组件的集成：
+   ```typescript
+   describe('ContextTracker Integration', () => {
+     let contextTracker: ContextTracker;
+     let mockConfigManager: ConfigurationManager;
+     
+     beforeEach(() => {
+       // 设置测试环境
+     });
+     
+     test('updateContext should collect, filter and format files correctly', async () => {
+       // 验证完整流程
+     });
+   });
+   ```
+
+3. 手动测试：
+   - 验证重构后功能一致性：
+     - 打开多个文件，验证文件收集功能
+     - 测试不同的过滤配置（包括gitignore）
+     - 验证输出格式是否正确
+     - 测试错误场景（如权限问题、无效配置等）
+
+4. 性能测试：
+   - 测量重构后性能：
+   ```typescript
+   test('performance measurement', async () => {
+     const startTime = performance.now();
+     await contextTracker.updateContext();
+     const endTime = performance.now();
+     
+     console.log(`Execution time: ${endTime - startTime}ms`);
+   });
+   ```
+
+5. 代码覆盖率检查：
+   - 使用测试框架覆盖率工具确保新代码足够覆盖
+   - 目标覆盖率：行覆盖率 > 80%，分支覆盖率 > 70%
+
+6. 回归测试：
+   - 确保现有功能在重构后仍然正常工作
+
+# Subtasks:
+## 1. 创建新的目录结构 [done]
+### Dependencies: None
+### Description: 已创建 src/types/interfaces.ts, src/services/, src/core/, src/utils/ 目录结构
+### Details:
+
+
+## 2. 拆分 ContextTracker 类 [done]
+### Dependencies: None
+### Description: 已拆分为 ConfigurationManager, FileFilter, FileCollector, OutputFormatter, ErrorHandler 和协调器 ContextTracker
+### Details:
+
+
+## 3. 保持功能完整性 [done]
+### Dependencies: None
+### Description: 所有原有功能保留，无新增功能，编译无错误
+### Details:
+
+
+## 4. 实现单一职责原则 [done]
+### Dependencies: None
+### Description: 每个类职责单一，使用依赖注入，接口定义清晰
+### Details:
+
+
+## 5. 添加单元测试覆盖 [todo]
+### Dependencies: None
+### Description: 为 FileCollector, FileFilter, OutputFormatter 等新类编写单元测试
+### Details:
+
+
+## 6. 进行功能验证测试 [todo]
+### Dependencies: None
+### Description: 手动测试验证重构后功能一致性
+### Details:
+
+
+## 7. 性能优化分析 [todo]
+### Dependencies: None
+### Description: 识别并实现可能的性能优化点
+### Details:
+
+
