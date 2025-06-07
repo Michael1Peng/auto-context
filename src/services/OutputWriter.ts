@@ -12,6 +12,7 @@ import { ErrorHandler } from "../utils/ErrorHandler";
 
 export class OutputWriter implements IOutputWriter {
   private readonly outputFormatter: IOutputFormatter;
+  private readonly outputFiles: Set<string> = new Set();
 
   constructor(outputFormatter: IOutputFormatter) {
     this.outputFormatter = outputFormatter;
@@ -31,6 +32,26 @@ export class OutputWriter implements IOutputWriter {
     } catch (error) {
       ErrorHandler.handleError("Failed to write output files", error);
     }
+  }
+
+  public cleanupOutputFiles(): void {
+    this.outputFiles.forEach((filePath) => {
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (error) {
+        ErrorHandler.handleError(
+          `Failed to delete output file: ${filePath}`,
+          error
+        );
+      }
+    });
+    this.outputFiles.clear();
+  }
+
+  public getTrackedFiles(): string[] {
+    return Array.from(this.outputFiles);
   }
 
   private writeToMultipleWorkspaces(
@@ -92,5 +113,8 @@ export class OutputWriter implements IOutputWriter {
     }
 
     fs.writeFileSync(outputPath, content, "utf8");
+
+    // 跟踪输出的文件
+    this.outputFiles.add(outputPath);
   }
 }

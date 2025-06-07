@@ -223,7 +223,7 @@
           "title": "实现多工作区输出逻辑",
           "description": "修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录",
           "details": "- 使用 vscode.workspace.workspaceFolders 检测多工作区\n- 在多工作区环境下遍历所有文件夹并输出\n- 保持单工作区环境的向后兼容性\n- 添加错误隔离机制",
-          "status": "in-progress",
+          "status": "done",
           "dependencies": [
             "16.4"
           ],
@@ -234,7 +234,7 @@
           "title": "实现文件跟踪和清理功能",
           "description": "添加输出文件跟踪机制，并在窗口关闭时自动清理文件",
           "details": "- 添加 outputFiles Set 来跟踪所有输出文件\n- 监听窗口关闭事件\n- 实现 cleanupOutputFiles 方法删除跟踪的文件\n- 在 dispose 方法中确保文件清理",
-          "status": "pending",
+          "status": "in-progress",
           "dependencies": [
             "16.1"
           ],

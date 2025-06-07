@@ -43,6 +43,16 @@ export class ContextTracker {
   }
 
   public dispose(): void {
+    // 清理输出文件
+    try {
+      this.outputWriter.cleanupOutputFiles();
+    } catch (error) {
+      ErrorHandler.handleError(
+        "Failed to cleanup output files during dispose",
+        error
+      );
+    }
+
     this.disposables.forEach((disposable) => disposable.dispose());
   }
 

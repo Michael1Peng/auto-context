@@ -130,7 +130,7 @@ private writeOutput(files: FileData[]): void {
 6. 测试边界情况（空工作区、无权限目录等）
 
 # Subtasks:
-## 1. 实现多工作区输出逻辑 [in-progress]
+## 1. 实现多工作区输出逻辑 [done]
 ### Dependencies: 16.4
 ### Description: 修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录
 ### Details:
@@ -139,7 +139,7 @@ private writeOutput(files: FileData[]): void {
 - 保持单工作区环境的向后兼容性
 - 添加错误隔离机制
 
-## 2. 实现文件跟踪和清理功能 [pending]
+## 2. 实现文件跟踪和清理功能 [in-progress]
 ### Dependencies: 16.1
 ### Description: 添加输出文件跟踪机制，并在窗口关闭时自动清理文件
 ### Details:

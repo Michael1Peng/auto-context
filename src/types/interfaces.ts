@@ -39,6 +39,8 @@ export interface IOutputFormatter {
 // 输出写入器接口
 export interface IOutputWriter {
   writeOutput(files: FileData[], outputList: OutputConfig[]): void;
+  cleanupOutputFiles(): void;
+  getTrackedFiles(): string[];
 }
 
 // 配置管理器接口
