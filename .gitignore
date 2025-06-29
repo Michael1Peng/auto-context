@@ -86,3 +86,7 @@ pids
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Task files
+# tasks.json
+# tasks/ 

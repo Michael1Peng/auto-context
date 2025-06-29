@@ -4,7 +4,8 @@
       "Bash(ls:*)",
       "Bash(npx ovsx publish)",
       "Bash(gh pr view:*)",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "mcp__task-master-ai__initialize_project"
     ],
     "deny": []
   }
