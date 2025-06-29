@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "name": "multiple-folders",
+      "path": "."
+    },
+    {
+      "name": "root",
+      "path": "../.."
+    }
+  ]
+}

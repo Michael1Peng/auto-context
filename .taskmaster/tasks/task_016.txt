@@ -1,0 +1,170 @@
+# Task ID: 16
+# Title: 实现多工作区输出支持
+# Status: done
+# Dependencies: 2, 4, 10
+# Priority: high
+# Description: 扩展当前的 auto context 插件，支持在 VS Code 多工作区环境下将上下文输出到不同的工作区目录中。
+# Details:
+当前插件只能输出到单一的 workspacePath，需要新增配置和功能来支持 code-workspace 文件中定义的多个 folders。
+
+核心需求：
+1. 读取 VS Code workspace 配置中的 folders 数组
+2. 支持将上下文输出到每个 folder 目录中
+3. 扩展现有的 outputList 配置，支持相对路径解析到不同工作区
+4. 保持向后兼容性
+
+技术实现要点：
+
+1. 使用 vscode.workspace.workspaceFolders API：
+```typescript
+interface WorkspaceOutputConfig extends OutputConfig {
+  targetWorkspaces?: string[]; // 指定输出到哪些工作区，空则输出到所有
+  useWorkspaceRelativePath?: boolean; // 是否使用相对于工作区的路径
+}
+
+class MultiWorkspaceContextTracker extends ContextTracker {
+  private getWorkspaceFolders(): vscode.WorkspaceFolder[] {
+    return vscode.workspace.workspaceFolders || [];
+  }
+  
+  private resolveOutputPaths(config: WorkspaceOutputConfig): string[] {
+    const workspaceFolders = this.getWorkspaceFolders();
+    const outputPaths: string[] = [];
+    
+    for (const folder of workspaceFolders) {
+      // 检查是否应该输出到这个工作区
+      if (config.targetWorkspaces && 
+          !config.targetWorkspaces.includes(folder.name)) {
+        continue;
+      }
+      
+      let outputPath: string;
+      if (config.useWorkspaceRelativePath) {
+        outputPath = path.join(folder.uri.fsPath, config.path);
+      } else {
+        outputPath = path.isAbsolute(config.path) ? 
+          config.path : 
+          path.join(folder.uri.fsPath, config.path);
+      }
+      
+      outputPaths.push(outputPath);
+    }
+    
+    return outputPaths;
+  }
+}
+```
+
+2. 扩展配置选项：
+```typescript
+interface ExtensionConfig {
+  outputList: WorkspaceOutputConfig[];
+  shouldOutput: boolean;
+  ignorePinnedTabs: boolean;
+  multiWorkspaceMode: boolean; // 新增：启用多工作区模式
+  defaultWorkspaceOutput: boolean; // 新增：是否在所有工作区输出
+}
+```
+
+3. 修改文件写入逻辑：
+```typescript
+private writeOutput(files: FileData[]): void {
+  try {
+    this.outputList.forEach(outputConfig => {
+      const outputPaths = this.resolveOutputPaths(outputConfig);
+      
+      outputPaths.forEach(outputPath => {
+        const formattedOutput = this.formatOutput(files, outputConfig.format);
+        const finalOutput = outputConfig.prependContent ? 
+          `${outputConfig.prependContent}\n${formattedOutput}` : 
+          formattedOutput;
+        
+        const outputDir = path.dirname(outputPath);
+        if (!fs.existsSync(outputDir)) {
+          fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        fs.writeFileSync(outputPath, finalOutput, 'utf8');
+      });
+    });
+  } catch (error) {
+    this.handleError('Failed to write output files', error);
+  }
+}
+```
+
+4. 新增配置示例：
+```json
+{
+  "autoContext.multiWorkspaceMode": true,
+  "autoContext.outputList": [
+    {
+      "path": "output/context.xml",
+      "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
+      "prependContent": "",
+      "targetWorkspaces": ["auto-copilot-context", "llm-prompts"],
+      "useWorkspaceRelativePath": true
+    },
+    {
+      "path": ".cursor/rules/context.mdc",
+      "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
+      "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---",
+      "useWorkspaceRelativePath": true
+    }
+  ]
+}
+```
+
+5. 文件路径处理：
+- 支持绝对路径和相对路径
+- 相对路径相对于每个工作区根目录解析
+- 添加工作区名称过滤功能
+- 支持通配符匹配工作区名称
+
+# Test Strategy:
+1. 测试单工作区环境下的向后兼容性
+2. 测试多工作区环境下的路径解析
+3. 验证文件输出到正确的工作区目录
+4. 测试工作区名称过滤功能
+5. 验证配置更新时的实时响应
+6. 测试边界情况（空工作区、无权限目录等）
+
+# Subtasks:
+## 1. 实现多工作区输出逻辑 [done]
+### Dependencies: 16.4
+### Description: 修改 writeOutput 方法支持检测多工作区环境并输出到所有工作区目录
+### Details:
+- 使用 vscode.workspace.workspaceFolders 检测多工作区
+- 在多工作区环境下遍历所有文件夹并输出
+- 保持单工作区环境的向后兼容性
+- 添加错误隔离机制
+
+## 2. 实现文件跟踪和清理功能 [done]
+### Dependencies: 16.1
+### Description: 添加输出文件跟踪机制，并在窗口关闭时自动清理文件
+### Details:
+- 添加 outputFiles Set 来跟踪所有输出文件
+- 监听窗口关闭事件
+- 实现 cleanupOutputFiles 方法删除跟踪的文件
+- 在 dispose 方法中确保文件清理
+
+## 3. 添加测试用例 [done]
+### Dependencies: 16.2
+### Description: 为多工作区输出和文件清理功能添加全面的测试用例
+### Details:
+- 单工作区兼容性测试
+- 多工作区功能测试
+- 文件清理测试
+- 错误处理测试
+- 边界情况测试
+
+## 4. 抽象writeOutput为独立模块 [done]
+### Dependencies: None
+### Description: 将ContextTracker中的writeOutput逻辑抽象为独立的OutputWriter模块，提高代码可维护性和可测试性
+### Details:
+- 创建新的OutputWriter类负责文件输出逻辑
+- 将writeOutput相关代码从ContextTracker中分离
+- 设计清晰的接口用于依赖注入
+- 保持现有功能不变，只进行代码重构
+- 为后续多工作区功能扩展做准备
+

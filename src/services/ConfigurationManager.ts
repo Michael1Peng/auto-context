@@ -19,6 +19,7 @@ export class ConfigurationManager implements IConfigurationManager {
 		// Ensure all paths are absolute
 		outputList.forEach(output => {
 			if (!path.isAbsolute(output.path)) {
+				output.relativePath = output.path;
 				output.path = path.join(workspacePath, output.path);
 			}
 		});
