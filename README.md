@@ -4,12 +4,12 @@
   <h1>Auto Copilot Context</h1>
   
   <p align="center">
-    <strong>"Bring Your Action Into Context"</strong>
+    <strong>"Turn Opened Tabs to Rules"</strong>
   </p>
   
   <p>
-    自动将你的开发行为转化为 AI 助手的智能上下文<br>
-    解决大型项目中 LLM 编程的上下文获取难题
+    将您的开发行为转化为智能上下文规则<br>
+    通过打开的标签页和工作区自动生成丰富的AI编程上下文
   </p>
 
   <p align="center">
@@ -31,16 +31,98 @@
 
 在大型项目中，AI 编程助手面临的最大挑战是**获取准确的上下文**。传统方式要么上下文过多导致请求超限，要么信息不足影响代码质量。
 
-**Auto Copilot Context** 通过监听你的开发行为，自动收集和整理相关文件内容，让 AI 助手始终拥有恰到好处的项目上下文。
+**Auto Copilot Context** 通过监听您的开发行为，自动收集和整理相关文件内容，将您的工作习惯转化为智能规则，让 AI 助手始终拥有恰到好处的项目上下文。
 
-## ✨ 工作流程
+## 🚀 使用方式
+
+### 核心工作流程
 
 ```
-📂 你浏览文件    →    🔍 智能分析依赖    →    📝 自动生成上下文    →    🤖 AI 精准编码
-    正常开发           收集相关代码           输出结构化内容           获得项目知识
+📂 打开文件标签页    →    🔍 智能识别上下文    →    � 生成规则文件    →    🤖 AI 精准编码
+   正常开发操作          自动收集相关代码         输出结构化内容         获得项目知识
 ```
 
-## 🚀 三步开始使用
+### 基于窗口和工作区的上下文管理
+
+#### 1. 窗口级别上下文
+- **单一焦点原则**：每个窗口专注于一个主要任务或功能模块
+- **标签页组织**：相关文件在同一窗口中打开，形成自然的上下文边界
+- **实时更新**：当您切换标签页时，上下文规则自动更新
+
+#### 2. 工作区级别上下文
+- **项目范围**：基于当前工作区的文件结构和依赖关系
+- **智能过滤**：自动识别并过滤掉无关文件（如 node_modules、build 文件等）
+- **多格式输出**：支持 Cursor、Claude、Cline 等多种 AI 工具的输入格式
+
+#### 3. 上下文切换策略
+```bash
+# 功能开发时
+Window 1: 组件文件 + 样式文件 + 测试文件
+Window 2: API 接口 + 数据模型 + 业务逻辑
+
+# 问题调试时
+Window 1: 错误文件 + 相关依赖 + 配置文件
+Window 2: 日志文件 + 测试用例 + 文档
+
+# 代码审查时
+Window 1: 变更文件 + 相关测试 + 文档更新
+Window 2: 原始文件 + 依赖关系 + 架构文档
+```
+
+## � 项目上下文目录组织
+
+### 推荐的项目结构
+
+```
+project-root/
+├── .cursor/
+│   └── rules/
+│       ├── opened-files.mdc       # 当前打开文件上下文
+│       ├── project-structure.mdc  # 项目结构说明
+│       └── coding-standards.mdc   # 编码规范
+├── .roo/
+│   └── rules/
+│       └── opened-files.md        # Roo AI 上下文
+├── .clinerules/
+│   └── opened-files.md            # Cline AI 上下文
+├── docs/
+│   ├── architecture.md            # 架构文档
+│   ├── api-reference.md           # API 文档
+│   └── development-guide.md       # 开发指南
+├── context-output/
+│   ├── opened-files.xml           # 通用XML格式
+│   └── session-context.json       # 会话上下文
+└── your-project-files...
+```
+
+### 需求管理和上下文组织
+
+#### 1. 按功能模块组织
+```
+feature-auth/
+├── context/
+│   ├── current-session.mdc       # 当前开发会话
+│   ├── related-files.mdc         # 相关文件列表
+│   └── dependencies.mdc          # 依赖关系
+├── src/
+├── tests/
+└── docs/
+```
+
+#### 2. 按开发阶段组织
+```
+development-phases/
+├── planning/
+│   └── context-requirements.mdc  # 需求分析上下文
+├── implementation/
+│   └── context-development.mdc   # 开发实现上下文
+├── testing/
+│   └── context-testing.mdc       # 测试验证上下文
+└── deployment/
+    └── context-deployment.mdc    # 部署配置上下文
+```
+
+## 🛠 快速开始
 
 ### 1️⃣ 安装扩展
 ```bash
@@ -51,70 +133,135 @@ Auto Context
 code --install-extension little-lion-39.auto-context
 ```
 
-### 2️⃣ 打开项目
-正常浏览和编辑你的项目文件，无需任何特殊操作
+### 2️⃣ 配置输出格式
+```json
+{
+  "autoContext.outputList": [
+    {
+      "path": ".cursor/rules/opened-files.mdc",
+      "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+      "prependContent": "---\ndescription: Auto-generated context from opened tabs\nglobs: \nalwaysApply: true\n---"
+    },
+    {
+      "path": "context-output/session-context.xml",
+      "format": "<OpenedFiles>\n<File name=\"${fileName}\">\n${content}\n</File>\n</OpenedFiles>\n"
+    }
+  ],
+  "autoContext.shouldOutput": true,
+  "autoContext.ignorePinnedTabs": true
+}
+```
 
-### 3️⃣ 自动工作
-扩展会自动：
-- 🔄 实时监听文件打开和切换
-- 📋 收集当前标签页的文件内容
-- 📤 生成结构化的上下文输出
-- 🎯 与 Cursor/Claude 等 AI 工具无缝集成
+### 3️⃣ 开始使用
+1. 正常打开和编辑项目文件
+2. 插件自动监听标签页变化
+3. 实时生成上下文规则文件
+4. AI 工具自动获取丰富上下文
 
 ## 🎬 实际使用场景
 
 ### 🆕 新人接手项目
 ```
 场景：刚加入团队，需要理解项目架构
-行为：浏览核心文件 → 自动收集架构信息 → AI 获得项目全貌
-效果：快速上手，减少学习成本
+操作：在不同窗口中打开相关模块文件
+效果：AI 获得分层的项目架构信息，快速理解代码结构
 ```
 
 ### 🔧 功能开发
 ```
 场景：开发新功能，需要了解相关模块
-行为：查看相关组件 → 自动分析依赖关系 → AI 理解代码关联
-效果：生成符合项目规范的代码
+操作：同一窗口打开相关组件、样式、测试文件
+效果：AI 理解功能的完整实现链路
 ```
 
 ### 🐛 Bug 修复
 ```
 场景：定位和修复线上问题
-行为：追踪问题代码 → 自动关联相关文件 → AI 获得完整上下文
-效果：准确定位问题，避免误修改
+操作：打开错误文件和相关依赖
+效果：AI 获得问题的完整上下文，准确定位根因
 ```
 
-## ⚙️ 配置选项
+## ⚙️ 高级配置
 
-### 基础配置
-插件安装后即可使用，默认配置适合大多数场景：
-
+### 自定义输出格式
 ```json
 {
-  "autoContext.shouldOutput": false,  // 是否自动输出上下文文件
-  "autoContext.ignorePinnedTabs": true,  // 是否忽略固定标签页
   "autoContext.outputList": [
     {
-      "path": "context-output.txt",  // 输出文件路径
-      "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n"
+      "path": ".cursor/rules/context-with-metadata.mdc",
+      "format": "# Context: ${fileName}\n\n## File Path\n${fileName}\n\n## Content\n```\n${content}\n```\n\n## Last Modified\n${timestamp}\n",
+      "prependContent": "---\ndescription: Enhanced context with metadata\nglobs: \nalwaysApply: true\ntags: [auto-generated, current-session]\n---"
     }
   ]
 }
 ```
 
-### 高级配置
-支持自定义输出格式，适配不同 AI 工具的输入要求：
-
+### 工作区特定配置
+在项目根目录创建 `.vscode/settings.json`：
 ```json
 {
   "autoContext.outputList": [
     {
-      "path": ".cursor/rules/context-output.mdc",
-      "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
-      "prependContent": "---\ndescription: Auto-generated context\nglobs: \nalwaysApply: true\n---"
+      "path": "project-context/current-session.mdc",
+      "format": "# Current Development Session\n\n## Active Files\n${fileName}\n\n## Code Content\n```${fileExtension}\n${content}\n```\n"
     }
   ]
 }
+```
+
+## 📄 推荐的 .gitignore
+
+```gitignore
+# Build outputs
+out/
+dist/
+build/
+*.vsix
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Auto-generated context files (optional - you may want to commit these)
+context-output/
+.cursor/rules/opened-files.mdc
+.roo/rules/opened-files.md
+.clinerules/opened-files.md
+
+# IDE files
+.vscode-test/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage and test files
+coverage/
+.nyc_output/
+.jest/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
 ```
 
 ## 🔧 开发和贡献
@@ -157,9 +304,10 @@ src/
 
 - ⚡ **零性能开销** - 异步处理，不影响开发体验
 - 🎯 **智能过滤** - 自动识别有效文件，过滤无关内容
-- 📱 **多格式支持** - 支持多种输出格式，适配不同 AI 工具
+- 📱 **多格式支持** - 支持 Cursor、Claude、Cline 等多种 AI 工具
 - 🔧 **高度可配置** - 灵活的配置选项，满足不同需求
 - 🚀 **即插即用** - 安装即用，无需复杂设置
+- 🪟 **窗口感知** - 基于窗口和工作区的智能上下文管理
 
 ## 📄 许可证
 
@@ -170,8 +318,8 @@ src/
 欢迎提交 Issue 和 Pull Request！
 
 1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
+2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启一个 Pull Request
 
@@ -179,7 +327,7 @@ src/
 
 <div align="center">
   <p>
-    如果这个项目对你有帮助，请考虑给我们一个 ⭐ Star！
+    如果这个项目对您有帮助，请考虑给我们一个 ⭐ Star！
   </p>
   <p>
     <sub>Built with ❤️ for developers who love efficient coding</sub>
