@@ -8,5 +8,30 @@
       "name": "root",
       "path": "../.."
     }
-  ]
+  ],
+  "settings": {
+    "autoContext.outputList": [
+      {
+        "path": "output/example.xml",
+        "format": "<Example Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Example Files>\n",
+        "prependContent": ""
+      },
+      {
+        "path": ".cursor/rules/example.mdc",
+        "format": "# Example Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+        "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---"
+      },
+      {
+        "path": ".roo/rules/example.md",
+        "format": "# Example Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+        "prependContent": ""
+      },
+      {
+        "path": ".clinerules/example.md",
+        "format": "# Example Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+        "prependContent": ""
+      }
+    ],
+    "autoContext.shouldOutput": true
+  }
 }

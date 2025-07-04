@@ -11,17 +11,4 @@
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
     "typescript.tsc.autoDetect": "off",
     "files.eol": "\n",
-    "autoContext.outputList":[
-      {
-        "path": "output/context-output.xml",
-        "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
-        "prependContent": ""
-      },
-      {
-        "path": ".cursor/rules/context-output.mdc",
-        "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
-        "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---"
-      }
-    ],
-    "autoContext.shouldOutput": true,
 }
