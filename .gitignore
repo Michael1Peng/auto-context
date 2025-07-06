@@ -1,28 +1,88 @@
-out
-dist
-output
-node_modules
-.vscode-test/
+# Build outputs
+out/
+dist/
+build/
+output/
 *.vsix
 
-# Added by Task Master AI
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dev-debug.log
-# Dependency directories
+# Dependencies
 node_modules/
-# Environment variables
-.env
-# Editor directories and files
+.pnp
+.pnp.js
+
+# Auto-generated context files (optional - you may want to commit these)
+context-output/
+.cursor/rules/opened-files.mdc
+.roo/rules/opened-files.md
+.clinerules/opened-files.md
+
+# IDE and Editor files
+.vscode-test/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-# OS specific
+
+# OS specific files
 .DS_Store
-# Task files
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+
+# Coverage and test files
+coverage/
+.nyc_output/
+.jest/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Task files and AI tools
+.taskmaster/
+*.task
+.ai-temp/
+
+# Package manager files
+package-lock.json.bak
+yarn.lock.bak
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity

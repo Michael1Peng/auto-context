@@ -1,5 +1,5 @@
 {
-  "name": "auto-copilot-context",
+  "name": "auto-context",
   "publisher": "little-lion-39",
   "displayName": "auto-context",
   "description": "",
@@ -50,22 +50,32 @@
             }
           },
           "default": [
-            {
-              "path": "context-output.txt",
-              "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
-              "prependContent": ""
-            },
-            {
-              "path": ".cursor/rules/context-output.mdc",
-              "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
-              "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---"
-            }
-          ],
+        {
+            "path": "output/opened-files.xml",
+            "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
+            "prependContent": ""
+        },
+        {
+            "path": ".cursor/rules/opened-files.mdc",
+            "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+            "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---"
+        },
+        {
+            "path": ".roo/rules/opened-files.md",
+            "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+            "prependContent": ""
+        },
+        {
+            "path": ".clinerules/opened-files.md",
+            "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+            "prependContent": ""
+        }
+    ],
           "description": "List of output configurations, each specifying a path and format for context output"
         },
         "autoContext.shouldOutput": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Whether to output the context file when files change"
         },
         "autoContext.ignorePinnedTabs": {
