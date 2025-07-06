@@ -1,16 +1,16 @@
 {
   "name": "auto-context",
   "publisher": "little-lion-39",
-  "displayName": "auto-context",
+  "displayName": "auto-copilot-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "engines": {
     "vscode": "^1.84.0"
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Michael1Peng/auto-context.git"
   },
   "categories": [
     "Other"
@@ -95,7 +95,10 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "publish:vscode": "vsce publish",
+    "publish:ovsx": "npx ovsx publish",
+    "publish:all": "pnpm run publish:vscode && pnpm run publish:ovsx"
   },
   "dependencies": {
     "@types/mocha": "^10.0.3",
