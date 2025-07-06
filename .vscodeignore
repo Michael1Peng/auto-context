@@ -11,3 +11,9 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+.env
+.taskmaster/**
+.roo/**
+output/**
+.clinerules/**
+.cursor/**
