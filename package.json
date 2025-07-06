@@ -4,7 +4,7 @@
   "displayName": "auto-copilot-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -98,7 +98,7 @@
     "test": "node ./out/test/runTest.js",
     "publish:vscode": "vsce publish",
     "publish:ovsx": "npx ovsx publish",
-    "publish:all": "pnpm run publish:vscode && pnpm run publish:ovsx"
+    "publish:all": "npm run publish:vscode && npm run publish:ovsx"
   },
   "dependencies": {
     "@types/mocha": "^10.0.3",
