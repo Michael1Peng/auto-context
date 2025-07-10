@@ -52,7 +52,6 @@ coverage/
 .cache/
 
 # Task files and AI tools
-.taskmaster/
 *.task
 .ai-temp/
 

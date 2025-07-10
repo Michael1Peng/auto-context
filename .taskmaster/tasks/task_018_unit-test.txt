@@ -1,0 +1,656 @@
+# Task ID: 18
+# Title: 实现单元测试框架和测试用例
+# Status: in-progress
+# Dependencies: None
+# Priority: high
+# Description: 为插件核心组件设计并实现一套完整的单元测试方案，覆盖ConfigurationManager、ContextTracker和extension.ts中的关键功能，确保代码质量和可靠性。
+# Details:
+本任务将为插件核心组件实现全面的单元测试框架和测试用例：
+
+1. 测试环境搭建：
+   - 安装必要的测试依赖：
+   ```bash
+   npm install --save-dev mocha @types/mocha chai @types/chai sinon @types/sinon @vscode/test-electron
+   ```
+   - 在`package.json`中配置测试脚本：
+   ```json
+   "scripts": {
+     "test": "node ./out/test/runTest.js"
+   }
+   ```
+   - 创建测试目录结构：
+   ```
+   src/
+     ├── test/
+     │   ├── suite/
+     │   │   ├── configurationManager.test.ts
+     │   │   ├── contextTracker.test.ts
+     │   │   ├── extension.test.ts
+     │   │   └── index.ts
+     │   ├── runTest.ts
+     │   ├── testUtils.ts
+     │   └── testConfig.ts
+   ```
+
+2. ConfigurationManager 测试实现：
+   ```typescript
+   // configurationManager.test.ts
+   import * as assert from 'assert';
+   import * as sinon from 'sinon';
+   import * as vscode from 'vscode';
+   import { ConfigurationManager } from '../../core/ConfigurationManager';
+   
+   suite('ConfigurationManager Tests', () => {
+     let configManager: ConfigurationManager;
+     let mockWorkspace: sinon.SinonStub;
+     
+     setup(() => {
+       // 模拟 vscode.workspace.getConfiguration
+       mockWorkspace = sinon.stub(vscode.workspace, 'getConfiguration');
+       mockWorkspace.returns({
+         get: (key: string) => {
+           if (key === 'outputPaths') return ['./context'];
+           if (key === 'enableGitignore') return true;
+           // 其他配置项...
+           return undefined;
+         },
+         update: sinon.stub().resolves()
+       });
+       
+       configManager = new ConfigurationManager();
+     });
+     
+     teardown(() => {
+       mockWorkspace.restore();
+     });
+     
+     test('should load default configuration correctly', () => {
+       const config = configManager.getConfig();
+       assert.strictEqual(config.outputPaths[0], './context');
+       assert.strictEqual(config.enableGitignore, true);
+     });
+     
+     test('should detect configuration changes', async () => {
+       const onConfigChangedSpy = sinon.spy();
+       configManager.onConfigChanged(onConfigChangedSpy);
+       
+       // 触发配置变更事件
+       const changeEvent = {
+         affectsConfiguration: (section: string) => section === 'autoContext'
+       };
+       await vscode.workspace.onDidChangeConfiguration.fire(changeEvent);
+       
+       assert.strictEqual(onConfigChangedSpy.calledOnce, true);
+     });
+     
+     // 更多测试用例...
+   });
+   ```
+
+3. ContextTracker 测试实现：
+   ```typescript
+   // contextTracker.test.ts
+   import * as assert from 'assert';
+   import * as sinon from 'sinon';
+   import * as vscode from 'vscode';
+   import { ContextTracker } from '../../core/ContextTracker';
+   import { ConfigurationManager } from '../../core/ConfigurationManager';
+   import { FileCollector } from '../../core/FileCollector';
+   
+   suite('ContextTracker Tests', () => {
+     let contextTracker: ContextTracker;
+     let mockConfigManager: sinon.SinonStubbedInstance<ConfigurationManager>;
+     let mockFileCollector: sinon.SinonStubbedInstance<FileCollector>;
+     
+     setup(() => {
+       // 创建模拟依赖
+       mockConfigManager = sinon.createStubInstance(ConfigurationManager);
+       mockFileCollector = sinon.createStubInstance(FileCollector);
+       
+       // 初始化 ContextTracker
+       contextTracker = new ContextTracker(
+         mockConfigManager as unknown as ConfigurationManager,
+         mockFileCollector as unknown as FileCollector
+       );
+     });
+     
+     test('should initialize correctly', () => {
+       assert.ok(contextTracker);
+       // 验证初始化时调用了正确的方法
+       assert.strictEqual(mockConfigManager.getConfig.calledOnce, true);
+     });
+     
+     test('should handle file changes correctly', async () => {
+       // 模拟文件变更事件
+       const fileUri = vscode.Uri.file('/test/path/file.ts');
+       const fileChangeEvent = { uri: fileUri };
+       
+       // 触发文件变更
+       await contextTracker.handleFileChange(fileChangeEvent);
+       
+       // 验证是否调用了文件收集器的更新方法
+       assert.strictEqual(mockFileCollector.updateFile.calledOnce, true);
+       assert.strictEqual(mockFileCollector.updateFile.firstCall.args[0], fileUri);
+     });
+     
+     test('should dispose resources correctly', () => {
+       const disposableSpy = sinon.spy();
+       (contextTracker as any).disposables = [{ dispose: disposableSpy }];
+       
+       contextTracker.dispose();
+       
+       assert.strictEqual(disposableSpy.calledOnce, true);
+     });
+     
+     // 更多测试用例...
+   });
+   ```
+
+4. Extension 激活测试：
+   ```typescript
+   // extension.test.ts
+   import * as assert from 'assert';
+   import * as sinon from 'sinon';
+   import * as vscode from 'vscode';
+   import * as myExtension from '../../extension';
+   
+   suite('Extension Activation Tests', () => {
+     test('should register all commands when activated', async () => {
+       // 模拟 vscode.commands.registerCommand
+       const registerCommandStub = sinon.stub(vscode.commands, 'registerCommand').returns({
+         dispose: () => {}
+       });
+       
+       // 激活扩展
+       const context: vscode.ExtensionContext = {
+         subscriptions: [],
+         // 其他必要的上下文属性...
+       } as any;
+       
+       await myExtension.activate(context);
+       
+       // 验证命令注册
+       assert.strictEqual(registerCommandStub.called, true);
+       assert.ok(registerCommandStub.calledWith('autoContext.generateContext'));
+       
+       // 验证上下文订阅
+       assert.ok(context.subscriptions.length > 0);
+       
+       registerCommandStub.restore();
+     });
+     
+     test('should initialize core components correctly', async () => {
+       // 使用 spy 监视核心组件的初始化
+       const contextTrackerSpy = sinon.spy(global, 'ContextTracker');
+       const configManagerSpy = sinon.spy(global, 'ConfigurationManager');
+       
+       const context: vscode.ExtensionContext = {
+         subscriptions: [],
+         // 其他必要的上下文属性...
+       } as any;
+       
+       await myExtension.activate(context);
+       
+       // 验证核心组件初始化
+       assert.strictEqual(configManagerSpy.calledOnce, true);
+       assert.strictEqual(contextTrackerSpy.calledOnce, true);
+       
+       contextTrackerSpy.restore();
+       configManagerSpy.restore();
+     });
+   });
+   ```
+
+5. 测试运行器实现：
+   ```typescript
+   // runTest.ts
+   import * as path from 'path';
+   import { runTests } from '@vscode/test-electron';
+   import { config } from './testConfig';
+
+   async function main() {
+     try {
+       const extensionDevelopmentPath = path.resolve(__dirname, '../../');
+       const extensionTestsPath = path.resolve(__dirname, './suite/index');
+
+       await runTests({
+         extensionDevelopmentPath,
+         extensionTestsPath,
+         launchArgs: [
+           '--disable-extensions',
+           '--disable-workspace-trust'
+         ],
+         version: config.vscodeVersion,
+         extensionTestsEnv: {
+           TEST_VERBOSE: config.verbose ? 'true' : 'false',
+           MOCHA_TIMEOUT: config.timeout.toString()
+         }
+       });
+     } catch (err) {
+       console.error('Failed to run tests:', err);
+       process.exit(1);
+     }
+   }
+
+   main();
+   ```
+
+6. 测试配置系统：
+   ```typescript
+   // testConfig.ts
+   export const config = {
+     vscodeVersion: process.env.VSCODE_VERSION || 'stable',
+     verbose: process.env.TEST_VERBOSE === 'true',
+     timeout: parseInt(process.env.TEST_TIMEOUT || '5000'),
+     mochaOptions: {
+       ui: 'tdd',
+       color: true,
+       timeout: parseInt(process.env.TEST_TIMEOUT || '5000')
+     }
+   };
+   ```
+
+7. 测试套件入口：
+   ```typescript
+   // index.ts
+   import * as path from 'path';
+   import * as Mocha from 'mocha';
+   import * as glob from 'glob';
+   import { config } from '../testConfig';
+
+   export function run(): Promise<void> {
+     const mocha = new Mocha(config.mochaOptions);
+
+     const testsRoot = path.resolve(__dirname, '.');
+
+     return new Promise((resolve, reject) => {
+       glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
+         if (err) {
+           return reject(err);
+         }
+
+         files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
+
+         try {
+           mocha.run(failures => {
+             if (failures > 0) {
+               reject(new Error(`${failures} tests failed.`));
+             } else {
+               resolve();
+             }
+           });
+         } catch (err) {
+           reject(err);
+         }
+       });
+     });
+   }
+   ```
+
+8. 测试工具类增强：
+   ```typescript
+   // testUtils.ts
+   import * as vscode from 'vscode';
+   import * as sinon from 'sinon';
+
+   // 现有函数...
+   
+   // 新增增强功能
+   export function createMockTextEditor(
+     document: vscode.TextDocument,
+     selections: vscode.Selection[] = [new vscode.Selection(0, 0, 0, 0)]
+   ): vscode.TextEditor {
+     return {
+       document,
+       selection: selections[0],
+       selections,
+       visibleRanges: [new vscode.Range(0, 0, document.lineCount, 0)],
+       viewColumn: vscode.ViewColumn.One,
+       // 其他必要属性和方法...
+     } as any;
+   }
+
+   export function assertCalled(spy: sinon.SinonSpy, callCount = 1, message?: string) {
+     if (spy.callCount !== callCount) {
+       throw new Error(message || `Expected ${callCount} calls, got ${spy.callCount}`);
+     }
+   }
+
+   export function sleep(ms: number): Promise<void> {
+     return new Promise(resolve => setTimeout(resolve, ms));
+   }
+
+   export function createTempWorkspaceFolder(): vscode.WorkspaceFolder {
+     const tempPath = require('os').tmpdir();
+     const folderName = `test-workspace-${Date.now()}`;
+     const folderPath = path.join(tempPath, folderName);
+     
+     return {
+       name: folderName,
+       uri: vscode.Uri.file(folderPath),
+       index: 0
+     };
+   }
+   ```
+
+# Test Strategy:
+测试策略将采用以下步骤验证实现的正确性：
+
+1. 单元测试验证：
+   - 运行所有单元测试并确保通过率达到 90% 以上：
+   ```bash
+   # 使用环境变量配置测试
+   TEST_VERBOSE=true VSCODE_VERSION=1.85.0 TEST_TIMEOUT=15000 npm test
+   ```
+   
+   - 使用 NYC 或 Istanbul 生成代码覆盖率报告，验证关键模块的覆盖率：
+   ```bash
+   npm install --save-dev nyc
+   npx nyc npm run test
+   ```
+   
+   - 检查覆盖率报告，确保：
+     * ConfigurationManager: 行覆盖率 > 90%
+     * ContextTracker: 行覆盖率 > 85%
+     * extension.ts activate 函数: 行覆盖率 > 80%
+
+2. 模块功能验证：
+   - ConfigurationManager 测试验证点：
+     * 默认配置加载正确
+     * 配置更新能被正确检测
+     * 配置验证逻辑工作正常
+     * 配置变更事件正确触发
+     * 无效配置能被正确处理
+
+   - ContextTracker 测试验证点：
+     * 初始化过程正确创建所需资源
+     * 文件变更事件能被正确处理
+     * 资源释放（dispose）逻辑正确执行
+     * 与其他组件的交互符合预期
+
+   - extension.ts 测试验证点：
+     * 扩展激活时正确初始化所有组件
+     * 命令注册成功
+     * 事件订阅正确设置
+     * 扩展上下文正确配置
+
+3. 集成测试验证：
+   - 使用@vscode/test-electron创建模拟VS Code环境
+   - 验证完整工作流程：
+     * 扩展激活
+     * 配置加载
+     * 文件变更触发上下文更新
+     * 输出生成
+   - 测试不同配置组合下的行为
+   - 使用环境变量控制测试参数：
+     ```bash
+     # 过滤特定测试
+     MOCHA_GREP="ConfigurationManager" npm test
+     ```
+
+4. 边缘情况测试：
+   - 测试无效配置情况下的行为
+   - 测试大量文件变更时的性能和稳定性
+   - 测试在资源受限环境下的行为
+
+5. 回归测试：
+   - 确保所有之前实现的功能在添加测试后仍然正常工作
+   - 验证与其他 VS Code 功能的兼容性未受影响
+
+6. 手动验证：
+   - 在实际 VS Code 环境中运行测试版本
+   - 验证扩展在实际使用场景中的行为符合预期
+   - 确认测试覆盖了所有关键用户场景
+
+测试通过标准：
+- 所有自动化测试通过
+- 代码覆盖率达到目标阈值
+- 手动验证未发现功能缺陷
+- 性能指标符合预期
+
+# Subtasks:
+## 1. Test Environment Setup and Dependency Installation [done]
+### Dependencies: None
+### Description: Set up the testing environment and install required dependencies
+### Details:
+1. Install testing dependencies: mocha, chai, sinon, and vscode test-electron packages. 2. Configure test script in package.json to point to the test runner. 3. Create the test directory structure with files for ConfigurationManager, ContextTracker, and extension tests.
+<info added on 2025-06-07T05:29:09.926Z>
+Implemented test utility functions in src/test/testUtils.ts:
+- createMockTextDocument(): Mocks a VS Code TextDocument
+- createMockWorkspaceFolder(): Mocks a VS Code WorkspaceFolder
+- createMockExtensionContext(): Mocks the vscode.ExtensionContext
+- createMockConfiguration(): Mocks a vscode.WorkspaceConfiguration
+- setupVSCodeMocks(): Sets up global mocks for VS Code API
+
+Verified test directory structure includes testUtils.ts and all test scripts. Confirmed successful test execution through compilation, linting, and test runner validation. Testing environment is fully operational with all dependencies installed and configured.
+</info added on 2025-06-07T05:29:09.926Z>
+
+## 2. Implement Test Utility Functions [done]
+### Dependencies: None
+### Description: Create reusable test utility functions for mocking VS Code components
+### Details:
+Implement testUtils.ts with helper functions: 1. createMockTextDocument for simulating text documents. 2. createMockWorkspaceFolder for workspace simulation. 3. Include type-safe mocks for VS Code API methods used in tests.
+<info added on 2025-06-07T05:30:24.336Z>
+Note: Implementation of the test utility functions was completed in subtask 18.1. The following functions are now available in src/test/testUtils.ts:
+
+1. createMockTextDocument(content: string, fileName: string)
+   - Creates a mock VS Code TextDocument object with complete document properties: fileName, getText(), uri, lineCount, lineAt()
+   - Supports TypeScript language ID and version control
+   - Includes all necessary method stubs
+
+2. createMockWorkspaceFolder(name: string, path: string)
+   - Creates a mock WorkspaceFolder object with name, uri, and index properties
+   - Used for simulating multi-workspace environments
+
+3. createMockExtensionContext()
+   - Creates a complete mock ExtensionContext object
+   - Includes subscriptions array for resource management
+   - Mocks workspaceState and globalState
+   - Includes secrets API mock
+   - Supports environment variables collection
+   - Includes storage paths and extension information
+
+4. createMockConfiguration(configValues: Record<string, any>)
+   - Creates a mock WorkspaceConfiguration object
+   - Supports get(), has(), inspect(), and update() methods
+   - Allows preset configuration values for testing
+
+5. setupVSCodeMocks()
+   - Sets up global VS Code API mocks
+   - Mocks workspace.getConfiguration
+   - Mocks window message APIs (showErrorMessage, showInformationMessage, showWarningMessage)
+   - Mocks commands.registerCommand
+   - Returns cleanup function for test restoration
+
+All functions include complete TypeScript type support and use sinon for method mocking, providing robust infrastructure for unit tests.
+</info added on 2025-06-07T05:30:24.336Z>
+
+## 3. Implement ConfigurationManager Unit Tests [done]
+### Dependencies: None
+### Description: Create test cases for ConfigurationManager functionality
+### Details:
+1. Implement configurationManager.test.ts with test suite. 2. Test configuration loading with default values. 3. Test configuration change detection mechanism. 4. Verify update method behavior using sinon stubs. 5. Cover all configuration properties and edge cases.
+<info added on 2025-06-07T05:54:16.387Z>
+Tests implemented and passed:
+- should load default configuration when no outputList is configured
+- should load custom outputList configuration
+- should handle missing workspace root path
+- should convert relative paths to absolute paths
+- should preserve absolute paths
+- should handle boolean configuration values correctly
+- should use correct configuration section
+
+Test results: 8 tests passed in 7ms with no compilation or linting errors. Coverage includes all core functionality: configuration loading, path handling, default values, and error cases.
+</info added on 2025-06-07T05:54:16.387Z>
+
+## 4. Implement ContextTracker Unit Tests [done]
+### Dependencies: None
+### Description: Create test cases for ContextTracker functionality
+### Details:
+1. Implement contextTracker.test.ts test suite. 2. Test initialization dependencies. 3. Verify file change handling logic. 4. Test resource disposal mechanism. 5. Cover interaction with FileCollector using stubs.
+<info added on 2025-06-07T07:16:52.691Z>
+1. Implement ContextTracker unit tests in contextTracker.test.ts using @vscode/test-electron framework with sinon for stubs/spies
+2. Test initialization with configuration dependencies and method validation
+3. Verify file change event handling logic and listener setup
+4. Test open file tracking through textDocuments and tabGroups simulation
+5. Cover resource disposal mechanism and disposable cleanup
+6. Validate error handling during output operations
+7. Implement document validation checks for scheme and untitled files
+8. Utilize testUtils for mock context/config and setup/teardown patterns
+9. Verification points: initialization, event listeners, file collection, disposal, error handling
+</info added on 2025-06-07T07:16:52.691Z>
+<info added on 2025-06-29T15:06:28.984Z>
+已完成 ContextTracker 单元测试实现：
+1. 为 ContextTracker.ts 添加了详细的测试注释标记（@testable, @scenario, @test-implementation）
+2. 创建了完整的单元测试文件 ContextTracker.test.ts，包含：
+   - 构造函数测试（依赖注入验证）
+   - initialize 方法测试（事件监听器注册）
+   - dispose 方法测试（资源清理）
+   - 文件变更处理测试（配置驱动的行为）
+   - 集成点测试（与配置管理器的交互）
+3. 所有测试用例都添加了序号标记（--> 1-11），便于后续指导
+4. 严格遵循只添加注释的原则，未修改任何业务逻辑代码
+5. 测试覆盖了初始化依赖、事件监听器设置、文件变更处理逻辑、资源清理机制和与FileCollector的交互
+</info added on 2025-06-29T15:06:28.984Z>
+
+## 5. Implement Extension Activation Tests [in-progress]
+### Dependencies: None
+### Description: Create tests for extension activation and command registration
+### Details:
+1. Implement extension.test.ts test suite. 2. Test command registration during activation. 3. Verify core component initialization. 4. Test subscription management in extension context. 5. Cover error handling during activation.
+<info added on 2025-06-07T07:18:13.895Z>
+1. Implement extension.test.ts test suite using @vscode/test-electron framework  
+2. Test command registration during activation with focus on 'auto-context.removeTopCommentBlocks'  
+3. Verify ContextTracker initialization and subscription management  
+4. Test graceful handling of missing workspace during activation  
+5. Validate configuration loading during activation  
+6. Cover error handling scenarios including configuration errors  
+7. Implement resource disposal verification on deactivation  
+8. Include tests for extension activation success verification  
+9. Ensure test coverage for configuration loading and error handling  
+10. Follow TDD structure with setup/teardown patterns using sinon for API mocking
+</info added on 2025-06-07T07:18:13.895Z>
+
+## 6. Implement Test Runner and Suite Integration [done]
+### Dependencies: None
+### Description: Set up test runner and test suite entry point
+### Details:
+1. Implement runTest.ts to launch VS Code test environment. 2. Create index.ts as test suite entry. 3. Configure Mocha instance with TDD interface. 4. Implement glob-based test discovery. 5. Set up proper error handling and exit codes.
+<info added on 2025-06-07T05:55:17.894Z>
+测试运行器和套件集成已完成验证，所有组件均正常工作：
+
+✅ runTest.ts (src/test/runTest.ts)已正确配置，成功启动VS Code测试环境，正确设置路径和错误处理
+
+✅ index.ts (src/test/suite/index.ts)已正确配置为测试套件入口，使用Mocha TDD接口，实现glob测试发现
+
+✅ Mocha配置验证通过，包括UI设置、颜色输出、测试文件发现模式和错误处理
+
+✅ 测试运行验证成功，npm test命令执行正常，VS Code测试环境正确加载，8个测试全部通过
+
+✅ 集成验证完成，测试编译、扩展编译、Linting均通过，完整测试流程正常工作
+
+无需额外配置，测试框架已完全集成并正常运行。
+</info added on 2025-06-07T05:55:17.894Z>
+<info added on 2025-06-07T06:13:52.177Z>
+✅ 测试方案重新设计完成！使用 @vscode/test-electron 实现了更标准和可靠的测试环境。
+
+## 重新设计的测试方案特点：
+
+### 1. 标准化的测试运行器 (src/test/runTest.ts)
+- ✅ 使用 `@vscode/test-electron` 的最佳实践
+- ✅ 支持指定 VS Code 版本 (通过环境变量 VSCODE_VERSION)
+- ✅ 完整的启动参数配置，包括禁用扩展、工作区信任等
+- ✅ 详细的日志输出和错误处理
+- ✅ 环境变量配置支持
+
+### 2. 增强的测试套件入口 (src/test/suite/index.ts)
+- ✅ 使用配置化的 Mocha 设置
+- ✅ 全局测试钩子 (beforeAll/afterAll)
+- ✅ 智能的测试文件发现和加载
+- ✅ 详细的测试执行反馈
+- ✅ 可配置的详细输出模式
+
+### 3. 专业的测试配置系统 (src/test/testConfig.ts)
+- ✅ 集中化的测试配置管理
+- ✅ 环境变量支持 (TEST_VERBOSE, VSCODE_VERSION, TEST_TIMEOUT)
+- ✅ VS Code 启动参数优化
+- ✅ Mocha 配置标准化
+- ✅ 可扩展的配置覆盖机制
+
+### 4. 完善的测试工具类 (src/test/testUtils.ts)
+- ✅ 类型安全的 VS Code API 模拟
+- ✅ 增强的 TextDocument 模拟 (支持范围文本提取、位置计算)
+- ✅ 完整的 ExtensionContext 模拟
+- ✅ TextEditor 模拟支持
+- ✅ 断言辅助函数 (assertCalled, assertCalledWith)
+- ✅ 测试环境辅助工具 (sleep, createTempWorkspaceFolder)
+
+### 5. 测试执行结果
+- ✅ 8个测试全部通过 (8 passing)
+- ✅ 执行时间：11ms
+- ✅ 找到2个测试文件
+- ✅ 全局设置和清理正常工作
+- ✅ VS Code 测试环境正确启动和关闭
+
+### 6. 环境变量支持
+# 启用详细输出
+TEST_VERBOSE=true npm test
+
+# 指定VS Code版本
+VSCODE_VERSION=1.85.0 npm test
+
+# 设置测试超时
+TEST_TIMEOUT=15000 npm test
+
+# 过滤测试
+MOCHA_GREP="ConfigurationManager" npm test
+
+这个重新设计的测试方案提供了更专业、可维护和可扩展的测试基础设施，为后续的测试开发奠定了坚实的基础。
+</info added on 2025-06-07T06:13:52.177Z>
+
+## 9. Implement Enhanced Test Utilities [pending]
+### Dependencies: None
+### Description: Extend test utilities with advanced mocking capabilities
+### Details:
+1. Add TextEditor simulation with selection support
+2. Implement assertion helpers (assertCalled, assertCalledWith)
+3. Create temporary workspace folder utility
+4. Add async sleep function for timing tests
+5. Enhance document mock with range extraction capabilities
+<info added on 2025-06-07T07:20:16.871Z>
+Add TabGroups and Tab simulation utility (createMockTabGroups)
+Add file system simulation utility (createMockFileSystem)
+Create test suite for test utilities (testUtils.test.ts) to verify all utility functions
+</info added on 2025-06-07T07:20:16.871Z>
+
+## 7. Configure Code Coverage and Reporting [pending]
+### Dependencies: None
+### Description: Set up code coverage instrumentation and reporting
+### Details:
+1. Install coverage tool (nyc or c8). 2. Add coverage scripts to package.json. 3. Configure .nycrc for coverage thresholds. 4. Integrate with test runner. 5. Set up CI-friendly reporting format.
+<info added on 2025-06-07T07:21:53.233Z>
+1. Install coverage tool dependencies: nyc, c8, and @istanbuljs/nyc-config-typescript  
+2. Configure NYC via .nycrc.json with thresholds, reporters, include/exclude patterns  
+3. Configure C8 via .c8rc.json as alternative coverage solution  
+4. Update package.json scripts for coverage commands (test:coverage, coverage:report, etc.)  
+5. Modify test runner (runTest.ts) to integrate coverage with @vscode/test-electron  
+6. Extend testConfig.ts with coverage flags and threshold settings  
+7. Implement coverage-report.js script for summary generation and threshold validation  
+8. Update GitHub Actions workflow for coverage-enabled testing and Codecov integration  
+9. Document environment variables for coverage control (TEST_COVERAGE, COVERAGE_TOOL)  
+10. Establish coverage verification process: data generation, threshold checks, reporting, and CI/CD integration
+</info added on 2025-06-07T07:21:53.233Z>
+
+## 8. Integration Testing and Manual Verification [pending]
+### Dependencies: None
+### Description: Perform end-to-end test validation and manual checks
+### Details:
+1. Run full test suite in VS Code environment. 2. Verify all tests pass in isolation and together. 3. Manually inspect test output and coverage reports. 4. Validate test failure scenarios. 5. Document test execution process.
+<info added on 2025-06-07T07:23:16.471Z>
+1. Implement end-to-end integration tests for the extension workflow, configuration changes, error handling, performance, and resource cleanup in src/test/suite/integration.test.ts
+2. Create comprehensive manual testing checklist in docs/manual-testing-checklist.md covering activation, file tracking, output generation, error scenarios, and performance
+3. Develop automated verification script (scripts/verify-tests.js) for compilation, linting, test execution, coverage checks, and test file validation
+4. Configure CI/CD pipeline (.github/workflows/comprehensive-test.yml) for multi-OS, multi-Node.js version, and multi-VSCode version testing
+5. Validate test environment compatibility across Ubuntu/Windows/macOS, Node.js 16.x/18.x, and VSCode stable/insiders versions
+</info added on 2025-06-07T07:23:16.471Z>
+
