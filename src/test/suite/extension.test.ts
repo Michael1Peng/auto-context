@@ -1,15 +1,75 @@
 import * as assert from 'assert';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
-suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+import { ContextTracker } from '../../core/ContextTracker';
+import { ExtensionConfig } from '../../types/interfaces';
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+suite('Extension Integration Test Suite', () => {
+	vscode.window.showInformationMessage('Start integration tests.');
+
+	test('核心流程集成测试: ContextTracker初始化和基础功能', () => {
+		// 创建临时目录
+		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-context-test-'));
+		const outputPath = path.join(tempDir, 'test-output.xml');
+
+		try {
+			// Mock配置管理器
+			class MockConfigManager {
+				getConfiguration(): ExtensionConfig {
+					return {
+						outputList: [{
+							path: outputPath,
+							format: '<File>${fileName}: ${content}</File>',
+							prependContent: '<?xml version="1.0"?>'
+						}],
+						shouldOutput: true,
+						ignorePinnedTabs: false,
+					};
+				}
+			}
+
+			// 测试ContextTracker初始化
+			const mockConfigManager = new MockConfigManager();
+			let contextTracker: ContextTracker | undefined;
+			
+			assert.doesNotThrow(() => {
+				contextTracker = new ContextTracker(mockConfigManager);
+			}, 'ContextTracker创建不应该抛出异常');
+
+			assert.ok(contextTracker, 'ContextTracker应该成功创建');
+
+			assert.doesNotThrow(() => {
+				contextTracker!.initialize();
+			}, 'ContextTracker初始化不应该抛出异常');
+
+			// 测试清理功能
+			assert.doesNotThrow(() => {
+				contextTracker!.dispose();
+			}, 'ContextTracker清理不应该抛出异常');
+
+			console.log('✅ 集成测试通过: ContextTracker核心流程正常');
+
+		} finally {
+			// 清理临时目录
+			if (fs.existsSync(tempDir)) {
+				fs.rmSync(tempDir, { recursive: true, force: true });
+			}
+		}
+	});
+
+	test('扩展命令注册测试', async () => {
+		// 获取所有注册的命令
+		const commands = await vscode.commands.getCommands(true);
+		
+		// 验证插件命令已注册
+		assert.ok(
+			commands.includes('auto-context.removeTopCommentBlocks'),
+			'auto-context.removeTopCommentBlocks命令应该已注册'
+		);
+
+		console.log('✅ 命令注册测试通过');
 	});
 });
