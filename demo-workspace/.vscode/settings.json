@@ -1,0 +1,11 @@
+{
+    "autoContext.outputList": [
+        {
+            "path": "test-output.xml",
+            "format": "<File>${fileName}: ${content}</File>",
+            "prependContent": "<?xml version=\"1.0\"?>"
+        }
+    ],
+    "autoContext.shouldOutput": true,
+    "autoContext.ignorePinnedTabs": false
+}

@@ -7,7 +7,9 @@
       "Bash(gh pr list:*)",
       "Bash(npm run test:*)",
       "Bash(npm install:*)",
-      "Bash(npm run compile-tests:*)"
+      "Bash(npm run compile-tests:*)",
+      "Bash(npm run pretest:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }
