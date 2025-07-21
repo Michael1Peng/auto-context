@@ -60,7 +60,27 @@ suite('Extension Integration Test Suite', () => {
 		}
 	});
 
+	test('扩展激活测试', async () => {
+		// 验证扩展已加载
+		const extension = vscode.extensions.getExtension('little-lion-39.auto-context');
+		assert.ok(extension, '扩展应该已加载');
+
+		// 验证扩展已激活
+		if (!extension.isActive) {
+			await extension.activate();
+		}
+		assert.ok(extension.isActive, '扩展应该已激活');
+
+		console.log('✅ 扩展激活测试通过');
+	});
+
 	test('扩展命令注册测试', async () => {
+		// 确保扩展已激活
+		const extension = vscode.extensions.getExtension('little-lion-39.auto-context');
+		if (extension && !extension.isActive) {
+			await extension.activate();
+		}
+
 		// 获取所有注册的命令
 		const commands = await vscode.commands.getCommands(true);
 		
@@ -70,6 +90,14 @@ suite('Extension Integration Test Suite', () => {
 			'auto-context.removeTopCommentBlocks命令应该已注册'
 		);
 
-		console.log('✅ 命令注册测试通过');
+		// 测试命令执行（可选）
+		try {
+			await vscode.commands.executeCommand('auto-context.removeTopCommentBlocks');
+			console.log('✅ 命令执行成功');
+		} catch (error) {
+			assert.fail(`命令执行失败: ${error}`);
+		}
+
+		console.log('✅ 扩展命令注册测试通过');
 	});
 });

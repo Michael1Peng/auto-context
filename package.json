@@ -20,12 +20,6 @@
   ], 
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "auto-context.removeTopCommentBlocks",
-        "title": "Auto Context: Remove Top Comment Blocks"
-      }
-    ],
     "configuration": {
       "title": "Auto Context",
       "properties": {
