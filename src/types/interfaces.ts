@@ -17,7 +17,7 @@ export interface OutputConfig {
 // 扩展配置接口
 export interface ExtensionConfig {
   outputList: OutputConfig[];
-  shouldOutput: boolean;
+  shouldOutput: 'always' | 'gitRepOnly' | 'never';
   ignorePinnedTabs: boolean;
 }
 
@@ -46,4 +46,5 @@ export interface IOutputWriter {
 // 配置管理器接口
 export interface IConfigurationManager {
   getConfiguration(): ExtensionConfig;
+  shouldOutput(): boolean;
 }

@@ -17,7 +17,7 @@
   ],
   "activationEvents": [
     "onLanguage"
-  ], 
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -50,33 +50,38 @@
             }
           },
           "default": [
-        {
-            "path": "output/opened-files.xml",
-            "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
-            "prependContent": ""
-        },
-        {
-            "path": ".cursor/rules/opened-files.mdc",
-            "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
-            "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---"
-        },
-        {
-            "path": ".roo/rules/opened-files.md",
-            "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
-            "prependContent": ""
-        },
-        {
-            "path": ".clinerules/opened-files.md",
-            "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
-            "prependContent": ""
-        }
-    ],
+            {
+              "path": "output/opened-files.xml",
+              "format": "<Opened Files>\n<File Name>\n${fileName}\n</File Name>\n<File Content>\n${content}\n</File Content>\n</Opened Files>\n",
+              "prependContent": ""
+            },
+            {
+              "path": ".cursor/rules/opened-files.mdc",
+              "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+              "prependContent": "---\ndescription: \nglobs: \nalwaysApply: true\n---"
+            },
+            {
+              "path": ".roo/rules/opened-files.md",
+              "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+              "prependContent": ""
+            },
+            {
+              "path": ".clinerules/opened-files.md",
+              "format": "# Opened Files\n## File Name\n${fileName}\n## File Content\n${content}\n",
+              "prependContent": ""
+            }
+          ],
           "description": "List of output configurations, each specifying a path and format for context output"
         },
         "autoContext.shouldOutput": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to output the context file when files change"
+          "type": "string",
+          "enum": [
+            "always",
+            "gitRepOnly",
+            "never"
+          ],
+          "default": "gitRepOnly",
+          "description": "When to output the context file: 'always' for all cases, 'gitRepOnly' only in git repositories, 'never' to disable"
         },
         "autoContext.ignorePinnedTabs": {
           "type": "boolean",

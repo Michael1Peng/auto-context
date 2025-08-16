@@ -1,8 +1,19 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { ExtensionConfig, OutputConfig, IConfigurationManager } from '../types/interfaces';
 
 export class ConfigurationManager implements IConfigurationManager {
+	private isGitRepository(): boolean {
+		const workspacePath = vscode.workspace.rootPath;
+		if (!workspacePath) {
+			return false;
+		}
+		
+		const gitPath = path.join(workspacePath, '.git');
+		return fs.existsSync(gitPath);
+	}
+
 	public getConfiguration(): ExtensionConfig {
 		const config = vscode.workspace.getConfiguration('autoContext');
 		const workspacePath = vscode.workspace.rootPath || '';
@@ -26,8 +37,22 @@ export class ConfigurationManager implements IConfigurationManager {
 		
 		return {
 			outputList,
-			shouldOutput: config.get<boolean>('shouldOutput') || false,
+			shouldOutput: config.get<string>('shouldOutput') as 'always' | 'gitRepOnly' | 'never' || 'always',
 			ignorePinnedTabs: config.get<boolean>('ignorePinnedTabs') || false
 		};
+	}
+
+	public shouldOutput(): boolean {
+		const config = this.getConfiguration();
+		
+		switch (config.shouldOutput) {
+			case 'never':
+				return false;
+			case 'gitRepOnly':
+				return this.isGitRepository();
+			case 'always':
+			default:
+				return true;
+		}
 	}
 } 
