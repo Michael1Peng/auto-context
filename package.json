@@ -4,7 +4,7 @@
   "displayName": "auto-copilot-context",
   "description": "",
   "icon": "auto-copilot-context.png",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "engines": {
     "vscode": "^1.84.0"
   },
