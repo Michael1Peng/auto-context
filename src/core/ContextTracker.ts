@@ -57,7 +57,7 @@ export class ContextTracker {
   }
 
   private handleFileChange(): void {
-    if (!this.config.shouldOutput) {
+    if (!this.configManager.shouldOutput()) {
       return;
     }
     try {

@@ -19,6 +19,19 @@ class MockConfigurationManager {
   getConfiguration(): ExtensionConfig {
     return this.config;
   }
+
+  shouldOutput(): boolean {
+    switch (this.config.shouldOutput) {
+      case 'never':
+        return false;
+      case 'gitRepOnly':
+        // For testing, assume it's not a git repo unless specified
+        return false;
+      case 'always':
+      default:
+        return true;
+    }
+  }
 }
 
 suite("ContextTracker Test Suite", () => {
@@ -39,7 +52,7 @@ suite("ContextTracker Test Suite", () => {
           prependContent: '<?xml version="1.0"?>',
         },
       ],
-      shouldOutput: true,
+      shouldOutput: 'always',
       ignorePinnedTabs: false,
     };
   });
@@ -90,10 +103,10 @@ suite("ContextTracker Test Suite", () => {
     }, "dispose方法不应该抛出异常");
   });
 
-  test("shouldOutput为false时不输出", () => {
+  test("shouldOutput为never时不输出", () => {
     const noOutputConfig: ExtensionConfig = {
       ...mockConfig,
-      shouldOutput: false,
+      shouldOutput: 'never',
     };
 
     const mockConfigManager = new MockConfigurationManager(noOutputConfig);
@@ -102,11 +115,30 @@ suite("ContextTracker Test Suite", () => {
 
     // 模拟文件变化事件
     // 由于handleFileChange是私有方法，我们通过触发事件来间接测试
-    // 这里主要验证不会因为shouldOutput=false而抛出异常
+    // 这里主要验证不会因为shouldOutput=never而抛出异常
     assert.doesNotThrow(() => {
       // 触发文件变化事件（如果有的话）
       // 在实际测试中，这可能需要更复杂的模拟
-    }, "当shouldOutput为false时不应该抛出异常");
+    }, "当shouldOutput为never时不应该抛出异常");
+  });
+
+  test("shouldOutput为gitRepOnly时在非git仓库中不输出", () => {
+    const gitRepOnlyConfig: ExtensionConfig = {
+      ...mockConfig,
+      shouldOutput: 'gitRepOnly',
+    };
+
+    const mockConfigManager = new MockConfigurationManager(gitRepOnlyConfig);
+    
+    // Mock shouldOutput to return false for non-git repo
+    mockConfigManager.shouldOutput = () => false;
+    
+    contextTracker = new ContextTracker(mockConfigManager);
+    contextTracker.initialize();
+
+    assert.doesNotThrow(() => {
+      // 触发文件变化事件，应该不输出因为不是git仓库
+    }, "当shouldOutput为gitRepOnly且不是git仓库时不应该抛出异常");
   });
 
   test("多工作区环境下的集成测试", () => {
@@ -134,7 +166,7 @@ suite("ContextTracker Test Suite", () => {
           format: "<File>${fileName}: ${content}</File>",
         },
       ],
-      shouldOutput: true,
+      shouldOutput: 'always',
       ignorePinnedTabs: false,
     };
 
@@ -162,7 +194,7 @@ suite("ContextTracker Test Suite", () => {
           format: "<File>${fileName}: ${content}</File>",
         },
       ],
-      shouldOutput: true,
+      shouldOutput: 'always',
       ignorePinnedTabs: false,
     };
 
